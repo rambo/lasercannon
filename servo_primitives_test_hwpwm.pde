@@ -2,11 +2,10 @@
 #include <math.h> 
 #include <SimpleFIFO.h> 
 #include <avr/interrupt.h> 
-#include <Servo.h> 
 
 
+//Servo control via direct access to AVR PWM registers
 
-#define SERVO_START_PIN 6
 #define SERVO_CHANNELS 2
 #define LASER_CHANNELS 1
 #define D_OUT_PIN_MIN 2
@@ -19,6 +18,24 @@ byte servo_delays[SERVO_CHANNELS] =
     150,
 };
 
+//servo constants -- trim as needed http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1222623026/2
+// Most servos are analog devices so the exact null point may vary somewhat device to device.
+// This is particularly true of continuous rotation servos.
+int servo_trim[SERVO_CHANNELS] =
+{
+    1500,
+    1500,
+};
+
+volatile unsigned int servo_ports[SERVO_CHANNELS] =
+{
+    OCR1A,
+    OCR1B,
+};
+
+volatile int last_servo_value[SERVO_CHANNELS];
+
+
 boolean servo_reverse[SERVO_CHANNELS] =
 {
    false,
@@ -29,7 +46,6 @@ boolean servo_reverse[SERVO_CHANNELS] =
 #define QUEUE_STACK_SIZE 128
 
 SimpleFIFO<int,QUEUE_STACK_SIZE> servo_queue[SERVO_CHANNELS];
-Servo servo_objects[SERVO_CHANNELS];
 
 // Store expected micros() timestamp for servo to be done with it's current movement
 unsigned long servo_ready[SERVO_CHANNELS]; 
@@ -52,9 +68,8 @@ byte timer2_offset;
 //Timer2 overflow interrupt vector handler
 ISR(TIMER2_OVF_vect)
 {
-    sei();
-    // Toggle pin 9 to count frequency (true freq for ISV if freq seen in oscilloscope * 2)
-    //digitalWrite(9,!digitalRead(9));
+    // Toggle pin 7 to count frequency (true freq for ISV if freq seen in oscilloscope * 2)
+    //digitalWrite(7,!digitalRead(7));
 
     check_servo_queue();
 
@@ -66,17 +81,23 @@ void setup()
 {
     Serial.begin(57600);
 
+    // Direct HW-PWM servo control (http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1222623026/2)
+    pinMode(9,OUTPUT);
+    pinMode(10,OUTPUT);
+    TCCR1B = 0b00011010;	    // Fast PWM, top in ICR1, /8 prescale (.5 uSec)
+    TCCR1A = 0b10100010;	    //clear on compare match, fast PWM
+  					  // to use pin 9 as normal input or output, use  TCCR1A = 0b00100010
+  					  // to use pin 10 as normal input or output, use  TCCR1A = 0b10000010
+    ICR1 =  39999;		    // 40,000 clocks @ .5 uS = 20mS
+    // direct init the port for now
+    /*
+    OCR1A = servo_trim[0];
+    OCR1B = servo_trim[1];
+    */
+
     unsigned long time = micros();
     for (byte channel = 0; channel < SERVO_CHANNELS; channel++) //Initialize all 16 servos 
     {
-        int pin = SERVO_START_PIN + channel;
-        servo_objects[channel].attach(pin);
-
-        Serial.print("Servo ");
-        Serial.print(channel, DEC);
-        Serial.print(" attached to pin ");
-        Serial.println(pin, DEC);
-
         servo_ready[channel] = time;
         queue_servo_position(channel, 500);
     }
@@ -511,46 +532,62 @@ inline void check_servo_queue()
 
 inline boolean set_servo_position(byte channel, int position)
 {
-    /*
+
     Serial.print("set_servo_position called channel ");
     Serial.print(channel, DEC);
     Serial.print(" position ");
     Serial.println(position, DEC);
-    */
+
 
     if (channel >= SERVO_CHANNELS)
     {
         // channels start from 0 thus >=
         return false;
     }
+
+     if (servo_reverse[channel])
+     {
+        position = 2000 - position;
+     }
+     else
+     {
+        position = 1000 + position;
+     }
+
+
     // PONDER: add getbounds method to the servoshield library and use the actual bounds for calculations
     // Our input positions are 0-1000
-    if (servo_reverse[channel])
+    int travel = last_servo_value[channel] - position;
+    last_servo_value[channel] = position;
+    int pwmval;
+    pwmval = servo_trim[channel] + position;
+    
+    /**
+     * FIXME: figure out how to do array of pointers
+    servo_ports[channel] = pwmval;
+     */
+    if (channel == 0)
     {
-        position = 2000 - position;
+        OCR1A = pwmval;
     }
     else
     {
-        position = 1000 + position;
+        OCR1B = pwmval;
     }
-    int travel = servo_objects[channel].readMicroseconds() - position;
-    servo_objects[channel].writeMicroseconds(position);
 
     Serial.print("set_servo_position: channel=");
     Serial.print(channel, DEC);
-    Serial.print(" position ");
-    Serial.println(position, DEC);
+    Serial.print(" pwmval ");
+    Serial.println(pwmval, DEC);
 
     servo_ready[channel] = micros() + (abs(travel) * servo_delays[channel]);
 
-    /*
     Serial.print("Servo ");
     Serial.print(channel, DEC);
     Serial.print(" set to position ");
     Serial.print(position, DEC);
     Serial.print(", travel ");
     Serial.println(travel, DEC);
-    */
     
     return true;
 }
