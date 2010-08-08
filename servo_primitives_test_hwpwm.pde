@@ -52,7 +52,7 @@ unsigned long servo_ready[SERVO_CHANNELS];
 
 
 // Command queue
-#define COMMAND_STRING_SIZE 21 //Remember to allocate for the null termination
+#define COMMAND_STRING_SIZE 18 //Remember to allocate for the null termination
 #define COMMAND_QUEUE_SIZE 25 // NOTE: Raising this will *easily* make the board run out of SRAM
 
 char command_queue[COMMAND_QUEUE_SIZE][COMMAND_STRING_SIZE];
@@ -109,7 +109,7 @@ void setup()
         digitalWrite(pin, HIGH);
     }
 
-    timer2_offset = (int)((257.0-(TIMER_CLOCK_FREQ / 300))+0.5); //offset timer for 300Hz
+    timer2_offset = (int)((257.0-(TIMER_CLOCK_FREQ / 150))+0.5); //offset timer for 150Hz
     Serial.print("timer2_offset ");
     Serial.println(timer2_offset, DEC);
 
@@ -322,8 +322,23 @@ void reset_command_queue()
 unsigned int loop_i;
 void loop()
 {
+    loop_i++;
     read_command_bytes();
     process_commands();
+    for (byte channel = 0; channel < SERVO_CHANNELS; channel++)
+    {
+        check_servo_queue();
+        /*
+        Serial.print("DEBUG: loop #");
+        Serial.print(loop_i, DEC);
+        Serial.print(" waiting for servo ");
+        Serial.print(channel, DEC);
+        Serial.print(" that has ");
+        Serial.print(servo_queue[channel].count(), DEC);
+        Serial.println(" commands in queue");
+        */
+        wait_for_servo(channel);
+    }
 }
 
 void laser(byte channel, boolean state)
@@ -466,17 +481,17 @@ boolean queue_servo_position(byte channel, int position)
         // channels start from 0 thus >=
         return false;
     }
-    return servo_queue[channel].enqueue(position);
-    /**
-     * Debug output version
+    // return servo_queue[channel].enqueue(position);
     boolean ret = servo_queue[channel].enqueue(position);
     Serial.print("queue_servo_position: channel ");
     Serial.print(channel, DEC);
+    Serial.print(" (position: ");
+    Serial.print(position, DEC);
+    Serial.print(") ");
     Serial.print(" has ");
     Serial.print(servo_queue[channel].count(), DEC);
     Serial.println(" items in queue");
     return ret;
-     */
 }
 
 void wait_for_servo(byte channel)
@@ -532,12 +547,12 @@ inline void check_servo_queue()
 
 inline boolean set_servo_position(byte channel, int position)
 {
-
+    /*
     Serial.print("set_servo_position called channel ");
     Serial.print(channel, DEC);
     Serial.print(" position ");
     Serial.println(position, DEC);
-
+    */
 
     if (channel >= SERVO_CHANNELS)
     {
@@ -575,19 +590,23 @@ inline boolean set_servo_position(byte channel, int position)
         OCR1B = pwmval;
     }
 
+    /*
     Serial.print("set_servo_position: channel=");
     Serial.print(channel, DEC);
     Serial.print(" pwmval ");
     Serial.println(pwmval, DEC);
+    */
 
     servo_ready[channel] = micros() + (abs(travel) * servo_delays[channel]);
 
+    /*
     Serial.print("Servo ");
     Serial.print(channel, DEC);
     Serial.print(" set to position ");
     Serial.print(position, DEC);
     Serial.print(", travel ");
     Serial.println(travel, DEC);
+    */
     
     return true;
 }

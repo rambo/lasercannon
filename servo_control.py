@@ -106,8 +106,8 @@ class lasercannon:
         #self._input_buffer += self.port.readlines()
         for line in self._input_buffer:
             print "INPUT: " + repr(line).strip("'")
-        if self._char_buffer:
-            print "DEBUG: char buffer: " + repr(self._char_buffer)
+#        if self._char_buffer:
+#            print "DEBUG: char buffer: " + repr(self._char_buffer)
         self._input_buffer = []
 
     def hacklab(self, f_origo = (200,500), radius = 100):
