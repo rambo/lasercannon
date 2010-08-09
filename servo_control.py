@@ -137,15 +137,14 @@ class lasercannon:
     def xy(self, x, y, start_channel = 0):
         raise Exception("Not implemented")
 
-    def span(self, drange, radius, origo = (500, 500), start_channel = 0):
-        raise Exception("Not implemented")
-
     def line(self, start = (100,100), end = (900,900), start_channel = 0):
         self.send_command("C" + chr(start_channel+1) + int2bytes(start[0]) + int2bytes(start[1]) + int2bytes(end[0]) + int2bytes(end[1]))
 
     def circle(self, radius, origo = (500, 500), start_channel = 0, step = 8):
-        self.send_command("E" + chr(start_channel+1) + int2bytes(radius) + int2bytes(origo[0]) + int2bytes(origo[1]) + chr(step))
+        self.send_command("D" + chr(start_channel+1) + int2bytes(radius) + int2bytes(origo[0]) + int2bytes(origo[1]) + chr(step))
 
+    def span(self, drange, radius, origo = (500, 500), start_channel = 0, step = 8):
+        self.send_command("E" + chr(start_channel+1) + int2bytes(radius) + int2bytes(origo[0]) + int2bytes(origo[1]) + chr(step) + int2bytes(drange[0]) + int2bytes(drange[1]))
 
     def _curses_interactive(self, screen, start_channel = 0):
         raise Exception("Not implemented")

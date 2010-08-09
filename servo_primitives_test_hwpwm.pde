@@ -138,7 +138,7 @@ inline void read_command_bytes()
         incoming_command[incoming_position] = Serial.read();
 
         Serial.print("DEBUG: Got byte: ");
-        Serial.println(incoming_command[incoming_position], HEX);
+        Serial.println(incoming_command[incoming_position]);
 
         // Check for line end and in such case do special things
         if (   incoming_command[incoming_position] == 0xA // LF
@@ -156,8 +156,12 @@ inline void read_command_bytes()
             //strncpy(command_queue[command_queue_end], incoming_command, COMMAND_STRING_SIZE);
             memcpy(command_queue[command_queue_end], incoming_command, COMMAND_STRING_SIZE);
 
-            Serial.print("DEBUG: Got command: ");
-            Serial.println(incoming_command);
+            Serial.print("DEBUG: Got command: '");
+            for (byte i=0; i <= COMMAND_STRING_SIZE; i++)
+            {
+                Serial.print(command_queue[command_queue_end][i]);
+            }
+            Serial.println("'");
 
             // Using memset to clear the incoming command
             memset(&incoming_command, 0, COMMAND_STRING_SIZE+2);
@@ -257,22 +261,54 @@ inline void parse_command(byte key)
         }
             break;
         // void circle(byte start_channel, int radius, int origo_x, int origo_y, byte range_step)
-        case 0x44: // ASCII "E"
+        case 0x44: // ASCII "D"
         {
+            //Serial.println("DEBUG pase_command: E matched");
             int radius = bytes2int(command_queue[key][2], command_queue[key][3]);
             int origo_x = bytes2int(command_queue[key][4], command_queue[key][5]);
             int origo_y = bytes2int(command_queue[key][6], command_queue[key][7]);
+            /*
+            Serial.print("DEBUG Calling: circle(");
+            Serial.print(command_queue[key][1]-1, DEC);
+            Serial.print(", ");
+            Serial.print(radius, DEC);
+            Serial.print(", ");
+            Serial.print(origo_x, DEC);
+            Serial.print(", ");
+            Serial.print(origo_y, DEC);
+            Serial.print(", ");
+            Serial.print(command_queue[key][8], DEC);
+            Serial.println(") ");
+            */
             circle(command_queue[key][1]-1, radius, origo_x, origo_y, command_queue[key][8]);
         }
             break;
         // void span(byte start_channel, int radius, int origo_x, int origo_y, byte range_step, int range_start, int range_end)
-        case 0x45: // ASCII "F"
+        case 0x45: // ASCII "E"
         {
+            //Serial.println("DEBUG pase_command: F matched");
             int radius = bytes2int(command_queue[key][2], command_queue[key][3]);
             int origo_x = bytes2int(command_queue[key][4], command_queue[key][5]);
             int origo_y = bytes2int(command_queue[key][6], command_queue[key][7]);
             int range_start = bytes2int(command_queue[key][9], command_queue[key][10]);
             int range_end = bytes2int(command_queue[key][11], command_queue[key][12]);
+            /*
+            Serial.print("DEBUG Calling: span(");
+            Serial.print(command_queue[key][1]-1, DEC);
+            Serial.print(", ");
+            Serial.print(radius, DEC);
+            Serial.print(", ");
+            Serial.print(origo_x, DEC);
+            Serial.print(", ");
+            Serial.print(origo_y, DEC);
+            Serial.print(", ");
+            Serial.print(command_queue[key][8], DEC);
+            Serial.print(", ");
+            Serial.print(range_start, DEC);
+            Serial.print(", ");
+            Serial.print(range_end, DEC);
+            Serial.println(") ");
+            */
             span(command_queue[key][1]-1, radius, origo_x, origo_y, command_queue[key][8], range_start, range_end);
         }
           break;
@@ -305,6 +341,9 @@ inline void parse_command(byte key)
                 reset_command_queue();
             }
             break;
+        default:
+          Serial.print("ERROR pase_command: command not recognized, command_queue[key][0]=");
+          Serial.println(command_queue[key][0], HEX);
     }
 }
 
@@ -384,7 +423,7 @@ void line(byte start_channel, int start_x, int start_y, int end_x, int end_y)
 /**
  * circle is a special case of span (going from 0 to 360 deg)
  */
-void circle(byte start_channel, int radius, int origo_x, int origo_y, byte range_step)
+inline void circle(byte start_channel, int radius, int origo_x, int origo_y, byte range_step)
 {
     /*
     Serial.print("circle: origo_x=");
@@ -442,13 +481,14 @@ void span(byte start_channel, int radius, int origo_x, int origo_y, byte range_s
         int x = int(round(cos(rad) * radius + origo_x));
         int y = int(round(sin(rad) * radius + origo_y));
 
-        /**
-         * 
-        Serial.print("x=");
+        /*
+        Serial.print("angle=");
+        Serial.print(angle, DEC);
+        Serial.print(" x=");
         Serial.print(x, DEC);
         Serial.print(" y=");
         Serial.println(y, DEC);
-         */
+        */
 
         if (x != last_x)
         {
@@ -481,7 +521,8 @@ boolean queue_servo_position(byte channel, int position)
         // channels start from 0 thus >=
         return false;
     }
-    // return servo_queue[channel].enqueue(position);
+    return servo_queue[channel].enqueue(position);
+    /*
     boolean ret = servo_queue[channel].enqueue(position);
     Serial.print("queue_servo_position: channel ");
     Serial.print(channel, DEC);
@@ -492,6 +533,7 @@ boolean queue_servo_position(byte channel, int position)
     Serial.print(servo_queue[channel].count(), DEC);
     Serial.println(" items in queue");
     return ret;
+    */
 }
 
 void wait_for_servo(byte channel)
