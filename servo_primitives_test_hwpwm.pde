@@ -62,7 +62,7 @@ byte command_queue_end;
 char incoming_command[COMMAND_STRING_SIZE+2]; //Reserve space for CRLF too.
 byte incoming_position;
 
-// Interrupt handler for empty8ng the servo command queue.
+// Interrupt handler for emptying the servo command queue.
 #define TIMER_CLOCK_FREQ 15616.0 // 16Mhz / 1024 prescaler
 byte timer2_offset;
 //Timer2 overflow interrupt vector handler
@@ -96,7 +96,7 @@ void setup()
     */
 
     unsigned long time = micros();
-    for (byte channel = 0; channel < SERVO_CHANNELS; channel++) //Initialize all 16 servos 
+    for (byte channel = 0; channel < SERVO_CHANNELS; channel++) //Initialize all servos 
     {
         servo_ready[channel] = time;
         queue_servo_position(channel, 500);
@@ -175,7 +175,11 @@ inline void read_command_bytes()
                     Serial.print("DEBUG: command_buffer[");
                     Serial.print(i, DEC);
                     Serial.print("]: ");
-                    Serial.println(command_queue[i]);
+                    for (byte i2=0; i2 <= COMMAND_STRING_SIZE; i2++)
+                    {
+                        Serial.print(command_queue[i][i2]);
+                    }
+                    Serial.println("");
                 }
                 Serial.println("NOTICE: Next command will overwrite last one");
                 command_queue_end--;
@@ -237,7 +241,7 @@ inline void parse_command(byte key)
             break;
         // void laser(byte channel, boolean state)
         case 0x41: // ASCII "A"
-            laser(command_queue[key][1]-1, command_queue[key][2]);
+            laser(command_queue[key][1], command_queue[key][2]);
             break;
         // void vector(byte start_channel, int angle, int power, int origo_x, int origo_y)
         case 0x42: // ASCII "B"
@@ -257,7 +261,7 @@ inline void parse_command(byte key)
             int start_y = bytes2int(command_queue[key][4], command_queue[key][5]);
             int end_x = bytes2int(command_queue[key][6], command_queue[key][7]);
             int end_y = bytes2int(command_queue[key][8], command_queue[key][9]);
-            line(command_queue[key][1]-1, start_x, start_y, end_x, end_y);
+            line(command_queue[key][1], start_x, start_y, end_x, end_y);
         }
             break;
         // void circle(byte start_channel, int radius, int origo_x, int origo_y, byte range_step)
@@ -269,7 +273,7 @@ inline void parse_command(byte key)
             int origo_y = bytes2int(command_queue[key][6], command_queue[key][7]);
             /*
             Serial.print("DEBUG Calling: circle(");
-            Serial.print(command_queue[key][1]-1, DEC);
+            Serial.print(command_queue[key][1], DEC);
             Serial.print(", ");
             Serial.print(radius, DEC);
             Serial.print(", ");
@@ -280,7 +284,7 @@ inline void parse_command(byte key)
             Serial.print(command_queue[key][8], DEC);
             Serial.println(") ");
             */
-            circle(command_queue[key][1]-1, radius, origo_x, origo_y, command_queue[key][8]);
+            circle(command_queue[key][1], radius, origo_x, origo_y, command_queue[key][8]);
         }
             break;
         // void span(byte start_channel, int radius, int origo_x, int origo_y, byte range_step, int range_start, int range_end)
@@ -294,7 +298,7 @@ inline void parse_command(byte key)
             int range_end = bytes2int(command_queue[key][11], command_queue[key][12]);
             /*
             Serial.print("DEBUG Calling: span(");
-            Serial.print(command_queue[key][1]-1, DEC);
+            Serial.print(command_queue[key][1], DEC);
             Serial.print(", ");
             Serial.print(radius, DEC);
             Serial.print(", ");
@@ -309,7 +313,16 @@ inline void parse_command(byte key)
             Serial.print(range_end, DEC);
             Serial.println(") ");
             */
-            span(command_queue[key][1]-1, radius, origo_x, origo_y, command_queue[key][8], range_start, range_end);
+            span(command_queue[key][1], radius, origo_x, origo_y, command_queue[key][8], range_start, range_end);
+        }
+          break;
+        case 0x46: // ASCII "F", laser state and xy
+        {
+            laser(command_queue[key][1], command_queue[key][2]);
+            int x = bytes2int(command_queue[key][4], command_queue[key][5]);
+            int y = bytes2int(command_queue[key][6], command_queue[key][7]);
+            queue_servo_position(command_queue[key][3], x);
+            queue_servo_position(command_queue[key][3]+1, y);
         }
           break;
         // Print command queue
@@ -319,13 +332,16 @@ inline void parse_command(byte key)
                 Serial.print("INFO: command_buffer[");
                 Serial.print(i, DEC);
                 Serial.print("]: ");
-                Serial.println(command_queue[i]);
+                for (byte i2=0; i2 <= COMMAND_STRING_SIZE; i2++)
+                {
+                    Serial.print(command_queue[i][i2]);
+                }
             }
             command_queue[key][0] = 0x0;
             break;
         // Wait for servo X
         case 0x78: // ASCII "x"
-            wait_for_servo(command_queue[key][1]-1);
+            wait_for_servo(command_queue[key][1]);
             break;
         // Wait for all servos
         case 0x79: // ASCII "y"
@@ -343,7 +359,7 @@ inline void parse_command(byte key)
             break;
         default:
           Serial.print("ERROR pase_command: command not recognized, command_queue[key][0]=");
-          Serial.println(command_queue[key][0], HEX);
+          Serial.println(command_queue[key][0]);
     }
 }
 

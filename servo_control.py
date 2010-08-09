@@ -134,17 +134,17 @@ class lasercannon:
     def servo_position(self, channel, position):
         raise Exception("Not implemented")
 
-    def xy(self, x, y, start_channel = 0):
-        raise Exception("Not implemented")
+    def xy(self, x, y, laser_state = True, laser_channel = 0, servo_start_channel = 0):
+        self.send_command("F" + chr(laser_channel) + chr(laser_state) + chr(servo_start_channel) + int2bytes(x) + int2bytes(y))
 
     def line(self, start = (100,100), end = (900,900), start_channel = 0):
-        self.send_command("C" + chr(start_channel+1) + int2bytes(start[0]) + int2bytes(start[1]) + int2bytes(end[0]) + int2bytes(end[1]))
+        self.send_command("C" + chr(start_channel) + int2bytes(start[0]) + int2bytes(start[1]) + int2bytes(end[0]) + int2bytes(end[1]))
 
     def circle(self, radius, origo = (500, 500), start_channel = 0, step = 8):
-        self.send_command("D" + chr(start_channel+1) + int2bytes(radius) + int2bytes(origo[0]) + int2bytes(origo[1]) + chr(step))
+        self.send_command("D" + chr(start_channel) + int2bytes(radius) + int2bytes(origo[0]) + int2bytes(origo[1]) + chr(step))
 
     def span(self, drange, radius, origo = (500, 500), start_channel = 0, step = 8):
-        self.send_command("E" + chr(start_channel+1) + int2bytes(radius) + int2bytes(origo[0]) + int2bytes(origo[1]) + chr(step) + int2bytes(drange[0]) + int2bytes(drange[1]))
+        self.send_command("E" + chr(start_channel) + int2bytes(radius) + int2bytes(origo[0]) + int2bytes(origo[1]) + chr(step) + int2bytes(drange[0]) + int2bytes(drange[1]))
 
     def _curses_interactive(self, screen, start_channel = 0):
         raise Exception("Not implemented")
@@ -234,6 +234,7 @@ def string_to_bin(s):
     return " ".join(bin)
 
 def print_arduino_bauds():
+    """Calculate 'optimal' bps rates for 16Mhz arduino"""
     for n in range(1,50):
         print 16000000/(16 * n)
 
