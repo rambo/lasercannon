@@ -38,7 +38,7 @@ volatile int last_servo_value[SERVO_CHANNELS];
 
 boolean servo_reverse[SERVO_CHANNELS] =
 {
-   false,
+   true,
    true,
 };
 
@@ -271,6 +271,7 @@ inline void parse_command(byte key)
             int radius = bytes2int(command_queue[key][2], command_queue[key][3]);
             int origo_x = bytes2int(command_queue[key][4], command_queue[key][5]);
             int origo_y = bytes2int(command_queue[key][6], command_queue[key][7]);
+
             /*
             Serial.print("DEBUG Calling: circle(");
             Serial.print(command_queue[key][1], DEC);
@@ -284,6 +285,7 @@ inline void parse_command(byte key)
             Serial.print(command_queue[key][8], DEC);
             Serial.println(") ");
             */
+
             circle(command_queue[key][1], radius, origo_x, origo_y, command_queue[key][8]);
         }
             break;
@@ -318,10 +320,25 @@ inline void parse_command(byte key)
           break;
         case 0x46: // ASCII "F", laser state and xy
         {
+            Serial.print("DEBUG Calling: laser(");
+            Serial.print(command_queue[key][1], DEC);
+            Serial.print(", ");
+            Serial.print(command_queue[key][2], DEC);
+            Serial.println(") ");
             laser(command_queue[key][1], command_queue[key][2]);
             int x = bytes2int(command_queue[key][4], command_queue[key][5]);
             int y = bytes2int(command_queue[key][6], command_queue[key][7]);
+            Serial.print("DEBUG Calling: queue_servo_position(");
+            Serial.print(command_queue[key][3], DEC);
+            Serial.print(", ");
+            Serial.print(x, DEC);
+            Serial.println(") ");
             queue_servo_position(command_queue[key][3], x);
+            Serial.print("DEBUG Calling: queue_servo_position(");
+            Serial.print(command_queue[key][3]+1, DEC);
+            Serial.print(", ");
+            Serial.print(y, DEC);
+            Serial.println(") ");
             queue_servo_position(command_queue[key][3]+1, y);
         }
           break;
@@ -336,6 +353,7 @@ inline void parse_command(byte key)
                 {
                     Serial.print(command_queue[i][i2]);
                 }
+                Serial.println("");
             }
             command_queue[key][0] = 0x0;
             break;
@@ -431,7 +449,6 @@ void line(byte start_channel, int start_x, int start_y, int end_x, int end_y)
     wait_for_servo(start_channel);
     wait_for_servo(end_channel);
     laser(0, HIGH);
-
     queue_servo_position(start_channel, end_x);
     queue_servo_position(end_channel, end_y);
 }
