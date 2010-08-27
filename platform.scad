@@ -38,6 +38,7 @@ module laser(heatsink = 0, x_axle = 110)
         }
         if (x_axle > 1)
         {
+            /*
             translate([0,0,35])
             {
                 rotate([0,90,0])
@@ -45,6 +46,7 @@ module laser(heatsink = 0, x_axle = 110)
                     % cylinder(r=0.5, h=x_axle, $fn=6, center=true);
                 }
             }
+            */
             % cylinder(r=0.5, h=x_axle, $fn=6, center=true);
         }
     }
@@ -118,7 +120,7 @@ module kiikkulauta()
                     {
                         rotate([90,0,45])
                         {
-                            # a_triangle(mirror1_angle, 7, 7);
+                            a_triangle(mirror1_angle, 7, 7);
                         }
                     }
                     // Säteen heijastus
