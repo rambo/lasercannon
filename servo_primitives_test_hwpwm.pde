@@ -88,7 +88,8 @@ void setup()
     TCCR1A = 0b10100010;	    //clear on compare match, fast PWM
   					  // to use pin 9 as normal input or output, use  TCCR1A = 0b00100010
   					  // to use pin 10 as normal input or output, use  TCCR1A = 0b10000010
-    ICR1 =  39999;		    // 40,000 clocks @ .5 uS = 20mS
+//    ICR1 =  39999;		    // 40,000 clocks @ .5 uS = 20mS
+    ICR1 =  20000;		    // 100Hz PWM refresh rate
     // direct init the port for now
     /*
     OCR1A = servo_trim[0];
