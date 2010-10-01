@@ -14,7 +14,6 @@ class lasercannon_gui(QtGui.QMainWindow):
         
         pass
 
-
 # Based on example from http://www.commandprompt.com/community/pyqt/x2765
 class Painting(QtGui.QWidget):
 
@@ -24,6 +23,7 @@ class Painting(QtGui.QWidget):
         self.currentPos = QtCore.QPoint(0,0)
 
     def blit(self, target, source):
+        """ 'blits' a pixmap to target, done this way since QT4 and thus PyQt4 does not have bitBlt() -function """
         p = QtGui.QPainter()
         p.begin(target)
         p.drawPixmap(0, 0, source)
