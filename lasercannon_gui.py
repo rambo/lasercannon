@@ -29,6 +29,7 @@ class Painting(QtGui.QWidget):
 #        apply(QtGui.QWidget.__init__,(self, ) + args)
         QtGui.QWidget.__init__(self, *args)
         self.buffer = QtGui.QPixmap()
+        self.backupbuffer = QtGui.QPixmap()
         self.currentPos = QtCore.QPoint(0,0)
 
     def blit(self, target, source):
@@ -43,19 +44,26 @@ class Painting(QtGui.QWidget):
         self.blit(self, self.buffer)
         pass
 
+    def mouseReleaseEvent(self, ev):
+        self.blit(self.backupbuffer, self.buffer)
+        # TODO: Store start and end coordinates
+
     def mouseMoveEvent(self, ev):
         self.p = QtGui.QPainter()
+        self.blit(self.buffer, self.backupbuffer)
         self.p.begin(self.buffer)
-        self.p.drawLine(self.currentPos, ev.pos())
+        self.p.drawLine(self.startPos, ev.pos())
         self.currentPos = QtCore.QPoint(ev.pos())
         self.p.end()
         self.repaint()
                 
     def mousePressEvent(self, ev):
         self.p = QtGui.QPainter()
+        self.blit(self.backupbuffer, self.buffer)
         self.p.begin(self.buffer)
         self.p.drawPoint(ev.pos())
         self.currentPos = QtCore.QPoint(ev.pos())
+        self.startPos = QtCore.QPoint(ev.pos())
         self.p.end()
         self.repaint()
         
@@ -63,8 +71,11 @@ class Painting(QtGui.QWidget):
         tmp = QtGui.QPixmap(self.buffer.size())
         self.blit(tmp, self.buffer)
         self.buffer = QtGui.QPixmap(ev.size())
+        self.backupbuffer = QtGui.QPixmap(ev.size())
         self.buffer.fill()
+        self.backupbuffer.fill()
         self.blit(self.buffer, tmp)
+        self.blit(self.backupbuffer, self.buffer)
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
