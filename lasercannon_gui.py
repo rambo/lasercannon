@@ -4,6 +4,7 @@ import sys
 
 from PyQt4 import QtGui, QtCore
 from lasercannon import *
+import math
 
 # try:
 #     from PyQt4.QtOpenGL import QGLWidget, QGLPixelBuffer
@@ -19,8 +20,16 @@ class lasercannon_gui(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.paintarea = Painting(self)
         self.setCentralWidget(self.paintarea)
-        
+        self.paintarea.callback = self.draw_callback
         pass
+    
+    def draw_callback(self, *args):
+        """ Data is a tuple with tool, startpoint & endpoint """
+        #print "callback data %s" % data_tuple
+        print "callback args %s" % args
+        data = args[0]
+        tool = data[0]
+        print tool
 
 # Based on example from http://www.commandprompt.com/community/pyqt/x2765
 class Painting(QtGui.QWidget):
@@ -31,6 +40,9 @@ class Painting(QtGui.QWidget):
         self.buffer = QtGui.QPixmap()
         self.backupbuffer = QtGui.QPixmap()
         self.currentPos = QtCore.QPoint(0,0)
+        self.callback = None
+        self.tool = 'line'
+        self.tool = 'circle'
 
     def blit(self, target, source):
         """ 'blits' a pixmap to target, done this way since QT4 and thus PyQt4 does not have bitBlt() -function """
@@ -46,26 +58,36 @@ class Painting(QtGui.QWidget):
 
     def mouseReleaseEvent(self, ev):
         self.blit(self.backupbuffer, self.buffer)
-        # TODO: Store start and end coordinates
+        data = (self.tool, self.startPos, ev.pos())
+        self.callback(data)
 
     def mouseMoveEvent(self, ev):
         self.p = QtGui.QPainter()
+        self.currentPos = QtCore.QPoint(ev.pos())
+        #print "mouseMoveEvent positions %s" % self.currentPos
         self.blit(self.buffer, self.backupbuffer)
         self.p.begin(self.buffer)
-        self.p.drawLine(self.startPos, ev.pos())
-        self.currentPos = QtCore.QPoint(ev.pos())
+
+        if (self.tool == 'line'):
+            self.p.drawLine(self.startPos, self.currentPos)
+        if (self.tool == 'circle'):
+            rx = abs(self.startPos.x() - self.currentPos.x())
+            ry = abs(self.startPos.y() - self.currentPos.y())
+            # The Arduino FW handles only circles now
+            if ( ry >= rx):
+                r = ry
+            else:
+                r = rx
+            self.p.drawEllipse(self.startPos, r, r)
+
+
         self.p.end()
         self.repaint()
                 
     def mousePressEvent(self, ev):
-        self.p = QtGui.QPainter()
         self.blit(self.backupbuffer, self.buffer)
-        self.p.begin(self.buffer)
-        self.p.drawPoint(ev.pos())
         self.currentPos = QtCore.QPoint(ev.pos())
         self.startPos = QtCore.QPoint(ev.pos())
-        self.p.end()
-        self.repaint()
         
     def resizeEvent(self, ev):
         tmp = QtGui.QPixmap(self.buffer.size())
