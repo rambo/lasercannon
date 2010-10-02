@@ -5,6 +5,14 @@ import sys
 from PyQt4 import QtGui, QtCore
 from lasercannon import *
 
+# try:
+#     from PyQt4.QtOpenGL import QGLWidget, QGLPixelBuffer
+#     QtGui.QWidget = QGLWidget
+#     QtGui.QPixmap = QGLPixelBuffer
+# except Exception, e:
+#     # import traceback
+#     print "Got exception when trying make magical GLWidgets"
+#     print e
 
 class lasercannon_gui(QtGui.QMainWindow):
     def __init__(self):
@@ -57,7 +65,6 @@ class Painting(QtGui.QWidget):
         self.buffer = QtGui.QPixmap(ev.size())
         self.buffer.fill()
         self.blit(self.buffer, tmp)
-
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
