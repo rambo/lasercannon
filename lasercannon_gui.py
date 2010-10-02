@@ -18,7 +18,8 @@ class lasercannon_gui(QtGui.QMainWindow):
 class Painting(QtGui.QWidget):
 
     def __init__(self, *args):
-        apply(QtGui.QWidget.__init__,(self, ) + args)
+#        apply(QtGui.QWidget.__init__,(self, ) + args)
+        QtGui.QWidget.__init__(self, *args)
         self.buffer = QtGui.QPixmap()
         self.currentPos = QtCore.QPoint(0,0)
 
