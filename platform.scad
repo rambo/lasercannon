@@ -2,6 +2,10 @@ use </Users/rambo/devel/MCAD/servos.scad>
 use </Users/rambo/devel/MCAD/triangles.scad>
 
 
+/**
+ * Laakeri: ulko halk 22mm sisähalk 8mm
+ */
+
 module alusta_c(size_x, size_y, size_z)
 {
     difference()
