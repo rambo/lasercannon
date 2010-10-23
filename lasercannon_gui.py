@@ -42,21 +42,22 @@ class lasercannon_gui(QtGui.QMainWindow):
         
         self.tool_buttons = QtGui.QButtonGroup()
 
-        line = QtGui.QToolButton()
-        self.connect(line, QtCore.SIGNAL('clicked()'), self.line_clicked) 
-        line.setCheckable(True)
-        self.paintarea.tool = 'line'
-        line.setChecked(True)
-        line.setText("Line")
-        self.tool_buttons.addButton(line, 1)
-        vbox.addWidget(line)
+        line_button = QtGui.QToolButton()
+        self.connect(line_button, QtCore.SIGNAL('clicked()'), self.line_button_clicked) 
+        line_button.setCheckable(True)
+        line_button.setText("Line")
+        self.tool_buttons.addButton(line_button, 1)
+        vbox.addWidget(line_button)
+        line_button.click()
 
-        circle = QtGui.QToolButton()
-        self.connect(circle, QtCore.SIGNAL('clicked()'), self.circle_clicked) 
-        circle.setCheckable(True)
-        circle.setText("Circle")
-        self.tool_buttons.addButton(circle, 2)
-        vbox.addWidget(circle)
+        circle_button = QtGui.QToolButton()
+        self.connect(circle_button, QtCore.SIGNAL('clicked()'), self.circle_button_clicked) 
+        circle_button.setCheckable(True)
+        circle_button.setText("Circle")
+        self.tool_buttons.addButton(circle_button, 2)
+        vbox.addWidget(circle_button)
+
+        vbox.addStretch()
         
         main_container = QtGui.QWidget()
         main_container.setLayout(hbox)
@@ -65,10 +66,10 @@ class lasercannon_gui(QtGui.QMainWindow):
         self.center()
         pass
 
-    def line_clicked(self, *args):
+    def line_button_clicked(self, *args):
         self.paintarea.tool = 'line'
 
-    def circle_clicked(self, *args):
+    def circle_button_clicked(self, *args):
         self.paintarea.tool = 'circle'
 
     def center(self):
@@ -143,6 +144,7 @@ class Painting(QtGui.QWidget):
         self.startPos = QtCore.QPoint(ev.pos())
         
     def resizeEvent(self, ev):
+        # TODO: recalculate the xyfactor and limit the paintarea size accordingly
         tmp = QtGui.QPixmap(self.buffer.size())
         self.blit(tmp, self.buffer)
         self.buffer = QtGui.QPixmap(ev.size())
@@ -151,7 +153,6 @@ class Painting(QtGui.QWidget):
         self.backupbuffer.fill()
         self.blit(self.buffer, tmp)
         self.blit(self.backupbuffer, self.buffer)
-        # TODO: recalculate the xyfactor
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
