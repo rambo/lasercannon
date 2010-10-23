@@ -39,14 +39,15 @@ class lasercannon_gui(QtGui.QMainWindow):
         vbox = QtGui.QVBoxLayout()
         hbox.addLayout(vbox)
         hbox.addWidget(self.paintarea)
-        
+
+        ## Grouped toggle-buttons for the drawing tools        
         self.tool_buttons = QtGui.QButtonGroup()
 
         line_button = QtGui.QToolButton()
         self.connect(line_button, QtCore.SIGNAL('clicked()'), self.line_button_clicked) 
         line_button.setCheckable(True)
         line_button.setText("Line")
-        self.tool_buttons.addButton(line_button, 1)
+        self.tool_buttons.addButton(line_button)
         vbox.addWidget(line_button)
         line_button.click()
 
@@ -54,15 +55,24 @@ class lasercannon_gui(QtGui.QMainWindow):
         self.connect(circle_button, QtCore.SIGNAL('clicked()'), self.circle_button_clicked) 
         circle_button.setCheckable(True)
         circle_button.setText("Circle")
-        self.tool_buttons.addButton(circle_button, 2)
+        self.tool_buttons.addButton(circle_button)
         vbox.addWidget(circle_button)
 
+        ## Buttons for other things (clear, terminal view, etc)
+        clear_button = QtGui.QToolButton()
+        self.connect(clear_button, QtCore.SIGNAL('clicked()'), self.paintarea.clear) 
+        clear_button.setText("Clear")
+        vbox.addWidget(clear_button)
+
+        # "Packing"
         vbox.addStretch()
-        
+
+        # Make a dummy widget to contain our layout and make it the "CentralWidget"
         main_container = QtGui.QWidget()
         main_container.setLayout(hbox)
         self.setCentralWidget(main_container)
 
+        # Center the window
         self.center()
         pass
 
@@ -84,6 +94,7 @@ class lasercannon_gui(QtGui.QMainWindow):
         data = args[0]
         tool = data[0]
         print tool
+
 
 # Based on example from http://www.commandprompt.com/community/pyqt/x2765
 class Painting(QtGui.QWidget):
@@ -133,7 +144,6 @@ class Painting(QtGui.QWidget):
                 r = rx
             self.p.drawEllipse(self.startPos, r, r)
 
-
         self.p.end()
         self.repaint()
 
@@ -141,6 +151,13 @@ class Painting(QtGui.QWidget):
         self.blit(self.backupbuffer, self.buffer)
         self.currentPos = QtCore.QPoint(ev.pos())
         self.startPos = QtCore.QPoint(ev.pos())
+
+    def clear(self, *args):
+        #print "clear called"
+        self.backupbuffer.fill()
+        self.blit(self.buffer, self.backupbuffer)
+        self.callback(('clear',))
+        self.repaint()
 
     def resizeEvent(self, ev):
         # TODO: recalculate the xyfactor and limit the paintarea size accordingly
