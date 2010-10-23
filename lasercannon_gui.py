@@ -75,8 +75,7 @@ class lasercannon_gui(QtGui.QMainWindow):
     def center(self):
         screen = QtGui.QDesktopWidget().screenGeometry()
         size =  self.geometry()
-        self.move((screen.width()-size.width())/2, 
-	    (screen.height()-size.height())/2)
+        self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
     
     def draw_callback(self, *args):
         """ Data is a tuple with tool, startpoint & endpoint """
@@ -127,7 +126,7 @@ class Painting(QtGui.QWidget):
         if (self.tool == 'circle'):
             rx = abs(self.startPos.x() - self.currentPos.x())
             ry = abs(self.startPos.y() - self.currentPos.y())
-            # The Arduino FW handles only circles now
+            # The Arduino FW handles only circles now. NOTE: strictly speaking we should solve the hypotenuse and use that as r...
             if ( ry >= rx):
                 r = ry
             else:
@@ -137,12 +136,12 @@ class Painting(QtGui.QWidget):
 
         self.p.end()
         self.repaint()
-                
+
     def mousePressEvent(self, ev):
         self.blit(self.backupbuffer, self.buffer)
         self.currentPos = QtCore.QPoint(ev.pos())
         self.startPos = QtCore.QPoint(ev.pos())
-        
+
     def resizeEvent(self, ev):
         # TODO: recalculate the xyfactor and limit the paintarea size accordingly
         tmp = QtGui.QPixmap(self.buffer.size())
