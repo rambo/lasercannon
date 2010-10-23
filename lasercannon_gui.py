@@ -40,21 +40,22 @@ class lasercannon_gui(QtGui.QMainWindow):
         hbox.addLayout(vbox)
         hbox.addWidget(self.paintarea)
         
-        tools = QtGui.QButtonGroup()
+        self.tool_buttons = QtGui.QButtonGroup()
 
         line = QtGui.QToolButton()
-        line.mousePressEvent = self.line_clicked
+        self.connect(line, QtCore.SIGNAL('clicked()'), self.line_clicked) 
+        line.setCheckable(True)
         self.paintarea.tool = 'line'
-        #line.setToggleButton(true)
+        line.setChecked(True)
         line.setText("Line")
-        tools.addButton(line)
+        self.tool_buttons.addButton(line, 1)
         vbox.addWidget(line)
 
         circle = QtGui.QToolButton()
-        circle.mousePressEvent = self.circle_clicked
-        #circle.setToggleButton(true)
+        self.connect(circle, QtCore.SIGNAL('clicked()'), self.circle_clicked) 
+        circle.setCheckable(True)
         circle.setText("Circle")
-        tools.addButton(circle)
+        self.tool_buttons.addButton(circle, 2)
         vbox.addWidget(circle)
         
         main_container = QtGui.QWidget()
