@@ -18,10 +18,63 @@ import math
 class lasercannon_gui(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        self.paintarea = Painting(self)
-        self.setCentralWidget(self.paintarea)
+        
+        self.paintarea = Painting()
         self.paintarea.callback = self.draw_callback
+
+        screen = QtGui.QDesktopWidget().screenGeometry()
+        if (   screen.height() < 1000
+            or screen.width() < 1100):
+            # 500x500 paint area
+            self.paintarea.setGeometry(0,0,500,500)
+            self.setGeometry(0,0,600,500)
+            self.xyfactor = 2
+        else:
+            # 1000x1000 paint area
+            self.paintarea.setGeometry(0,0,1000,1000)
+            self.setGeometry(0,0,1100,1000)
+            self.xyfactor = 1
+
+        hbox = QtGui.QHBoxLayout()
+        vbox = QtGui.QVBoxLayout()
+        hbox.addLayout(vbox)
+        hbox.addWidget(self.paintarea)
+        
+        tools = QtGui.QButtonGroup()
+
+        line = QtGui.QToolButton()
+        line.mousePressEvent = self.line_clicked
+        self.paintarea.tool = 'line'
+        #line.setToggleButton(true)
+        line.setText("Line")
+        tools.addButton(line)
+        vbox.addWidget(line)
+
+        circle = QtGui.QToolButton()
+        circle.mousePressEvent = self.circle_clicked
+        #circle.setToggleButton(true)
+        circle.setText("Circle")
+        tools.addButton(circle)
+        vbox.addWidget(circle)
+        
+        main_container = QtGui.QWidget()
+        main_container.setLayout(hbox)
+        self.setCentralWidget(main_container)
+
+        self.center()
         pass
+
+    def line_clicked(self, *args):
+        self.paintarea.tool = 'line'
+
+    def circle_clicked(self, *args):
+        self.paintarea.tool = 'circle'
+
+    def center(self):
+        screen = QtGui.QDesktopWidget().screenGeometry()
+        size =  self.geometry()
+        self.move((screen.width()-size.width())/2, 
+	    (screen.height()-size.height())/2)
     
     def draw_callback(self, *args):
         """ Data is a tuple with tool, startpoint & endpoint """
@@ -41,8 +94,7 @@ class Painting(QtGui.QWidget):
         self.backupbuffer = QtGui.QPixmap()
         self.currentPos = QtCore.QPoint(0,0)
         self.callback = None
-        self.tool = 'line'
-        self.tool = 'circle'
+        self.tool = None
 
     def blit(self, target, source):
         """ 'blits' a pixmap to target, done this way since QT4 and thus PyQt4 does not have bitBlt() -function """
@@ -98,6 +150,7 @@ class Painting(QtGui.QWidget):
         self.backupbuffer.fill()
         self.blit(self.buffer, tmp)
         self.blit(self.backupbuffer, self.buffer)
+        # TODO: recalculate the xyfactor
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
