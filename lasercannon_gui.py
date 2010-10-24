@@ -1,8 +1,12 @@
 #!/usr/bin/python
 import sys
 
+# Either PyQT4 or PySide is fine
+try:
+    from PyQt4 import QtGui, QtCore
+except:
+    from PySide import QtGui, QtCore
 
-from PyQt4 import QtGui, QtCore
 from lasercannon import *
 import math
 
