@@ -5,6 +5,16 @@ import serial, time
 from datetime import datetime
 
 
+class lasercannon_serial_backend:
+    def __init__(self, port):
+        self.port = port
+        
+    def send_command(self, command):
+        command = command + "\n"
+        for c in command:
+            self.port.write(c)
+        self.port.flush()
+        print 'DEBUG: sent command (binary) ' + string_to_bin(command)
 
 class lasercannon:
     def __init__(self, port):

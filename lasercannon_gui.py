@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys
+import sys, threading
 
 # Either PyQT4 or PySide is fine
 try:
@@ -22,6 +22,9 @@ import math
 class lasercannon_gui(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
+        
+        self.serial_port = None
+        self.backend = None
         
         self.paintarea = Painting()
         self.paintarea.callback = self.draw_callback
@@ -67,6 +70,16 @@ class lasercannon_gui(QtGui.QMainWindow):
         self.connect(clear_button, QtCore.SIGNAL('clicked()'), self.paintarea.clear) 
         clear_button.setText("Clear")
         vbox.addWidget(clear_button)
+        
+        # TODO: Make work like Hildon touchselector to conserve screen estate
+        serial_port_select = QtGui.QComboBox()
+        serial_port_select.setInsertPolicy(QtGui.QComboBox.InsertAlphabetically)
+        serial_port_select.addItems(QtCore.QStringList(['select port',] + self.get_serial_ports()))
+        self.connect(serial_port_select, QtCore.SIGNAL('currentIndexChanged(const QString&)'), self.serial_port_changed) 
+        #serial_port_select.setEditable(True)
+        #self.connect(serial_port_select, QtCore.SIGNAL('editTextChanged (const QString&)'), self.serial_port_changed) 
+        vbox.addWidget(serial_port_select)
+        
 
         # "Packing"
         vbox.addStretch()
@@ -79,6 +92,30 @@ class lasercannon_gui(QtGui.QMainWindow):
         # Center the window
         self.center()
         pass
+
+    def get_serial_ports(self):
+        import os, fnmatch, re
+        path = '/dev'
+        regex = re.compile('ttys.+|ttyUSB+|tty.usb.+|ttyS.+')
+        return [os.path.join(path, x) for x in filter(lambda item: bool(regex.search(item)), os.listdir(path))]
+
+    def serial_port_changed(self, port):
+        import serial
+        self.serial_port = serial.Serial(str(port), 57600, timeout=0)
+        self.backend = lasercannon_serial_backend(self.serial_port)
+        self.receiver_thread = threading.Thread(target=self.serial_reader)
+        self.receiver_thread.setDaemon(1)
+        self.receiver_thread.start()
+
+    def serial_reader(self):
+        alive = True
+        try:
+            while alive:
+                data = self.serial_port.read(1)
+                sys.stdout.write(data)
+        except serial.SerialException, e:
+            self.alive = False
+
 
     def line_button_clicked(self, *args):
         self.paintarea.tool = 'line'
