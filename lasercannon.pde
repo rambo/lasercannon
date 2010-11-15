@@ -139,7 +139,7 @@ inline void read_command_bytes()
         incoming_command[incoming_position] = Serial.read();
 
         Serial.print("DEBUG: Got byte: ");
-        Serial.println(incoming_command[incoming_position]);
+        Serial.println(incoming_command[incoming_position], HEX);
 
         // Check for line end and in such case do special things
         if (   incoming_command[incoming_position] == 0xA // LF

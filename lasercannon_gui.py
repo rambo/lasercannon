@@ -71,7 +71,7 @@ class lasercannon_gui(QtGui.QMainWindow):
         clear_button.setText("Clear")
         vbox.addWidget(clear_button)
         
-        # TODO: Make work like Hildon touchselector to conserve screen estate
+        # TODO: Make work like Hildon touchselector (or even just a simple button) to conserve screen estate
         serial_port_select = QtGui.QComboBox()
         serial_port_select.setInsertPolicy(QtGui.QComboBox.InsertAlphabetically)
         serial_port_select.addItems(QtCore.QStringList(['select port',] + self.get_serial_ports()))
@@ -96,12 +96,13 @@ class lasercannon_gui(QtGui.QMainWindow):
     def get_serial_ports(self):
         import os, fnmatch, re
         path = '/dev'
-        regex = re.compile('ttys.+|ttyUSB+|tty.usb.+|ttyS.+')
+        regex = re.compile('ttys.+|ttyUSB.+|tty.usb.+|ttyS.+')
         return [os.path.join(path, x) for x in filter(lambda item: bool(regex.search(item)), os.listdir(path))]
 
     def serial_port_changed(self, port):
         import serial
         self.serial_port = serial.Serial(str(port), 57600, timeout=0)
+        # TODO: Swicth to QT threads ?
         self.backend = lasercannon_serial_backend(self.serial_port)
         self.receiver_thread = threading.Thread(target=self.serial_reader)
         self.receiver_thread.setDaemon(1)
@@ -112,6 +113,8 @@ class lasercannon_gui(QtGui.QMainWindow):
         try:
             while alive:
                 data = self.serial_port.read(1)
+                # TODO: hex-encode unprintable characters
+                # TODO: Write a a text buffer that can be shown in separate window/tab instead of stdout
                 sys.stdout.write(data)
         except serial.SerialException, e:
             self.alive = False
@@ -135,9 +138,24 @@ class lasercannon_gui(QtGui.QMainWindow):
         data = args[0]
         tool = data[0]
         print tool
+        if (tool == 'clear'):
+            self.backend.clear()
+        if (tool == 'line'):
+            #print "start_x=%d, start_y=%d, end_x=%d, end_y=%d" % (data[1].x(), data[1].y(), data[2].x(), data[2].y())
+            self.backend.line((data[1].x(), data[1].y()), (data[2].x(), data[2].y()))
+        if (tool == 'circle'):
+            origo = (data[0].x(), data[0].y())
+            r = int(round(helpers().point_distance(origo, (data[1].x(), data[1].y()))))
+            self.backend.circle(r, origo)
 
 
-# Based on example from http://www.commandprompt.com/community/pyqt/x2765
+class helpers:
+    def point_distance(self, point1=(0,0), point2=(1,3)):
+        """Calculate distance between two points"""
+        return math.sqrt(math.pow(point1[0]-point2[0], 2) + math.pow(point1[1]-point2[1], 2))
+
+
+# Based on example from http://www.commandpromptndprompt.com/community/pyqt/x2765
 class Painting(QtGui.QWidget):
 
     def __init__(self, *args):
@@ -176,13 +194,8 @@ class Painting(QtGui.QWidget):
         if (self.tool == 'line'):
             self.p.drawLine(self.startPos, self.currentPos)
         if (self.tool == 'circle'):
-            rx = abs(self.startPos.x() - self.currentPos.x())
-            ry = abs(self.startPos.y() - self.currentPos.y())
-            # The Arduino FW handles only circles now. NOTE: strictly speaking we should solve the hypotenuse and use that as r...
-            if ( ry >= rx):
-                r = ry
-            else:
-                r = rx
+            r = int(round(helpers().point_distance((self.startPos.x(), self.startPos.y()), (self.currentPos.x(), self.currentPos.y()))))
+            # The Arduino FW handles only circles now
             self.p.drawEllipse(self.startPos, r, r)
 
         self.p.end()

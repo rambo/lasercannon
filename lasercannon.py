@@ -15,6 +15,17 @@ class lasercannon_serial_backend:
             self.port.write(c)
         self.port.flush()
         print 'DEBUG: sent command (binary) ' + string_to_bin(command)
+        return True
+
+    def line(self, start = (100,100), end = (900,900), start_channel = 0):
+        return self.send_command("C" + chr(start_channel) + int2bytes(start[0]) + int2bytes(start[1]) + int2bytes(end[0]) + int2bytes(end[1]))
+
+    def circle(self, radius, origo = (500, 500), start_channel = 0, step = 8):
+        self.send_command("D" + chr(start_channel) + int2bytes(radius) + int2bytes(origo[0]) + int2bytes(origo[1]) + chr(step))
+
+    def clear(self):
+        return self.send_command('zz')
+
 
 class lasercannon:
     def __init__(self, port):
