@@ -71,14 +71,14 @@ class lasercannon_gui(QtGui.QMainWindow):
         clear_button.setText("Clear")
         vbox.addWidget(clear_button)
         
-        # TODO: Make work like Hildon touchselector (or even just a simple button) to conserve screen estate
-        serial_port_select = QtGui.QComboBox()
-        serial_port_select.setInsertPolicy(QtGui.QComboBox.InsertAlphabetically)
-        serial_port_select.addItems(QtCore.QStringList(['select port',] + self.get_serial_ports()))
-        self.connect(serial_port_select, QtCore.SIGNAL('currentIndexChanged(const QString&)'), self.serial_port_changed) 
-        #serial_port_select.setEditable(True)
-        #self.connect(serial_port_select, QtCore.SIGNAL('editTextChanged (const QString&)'), self.serial_port_changed) 
-        vbox.addWidget(serial_port_select)
+        self.serial_port_select_dialog = QtGui.QInputDialog()
+        self.serial_port_select_dialog.setComboBoxItems(QtCore.QStringList(['select port',] + self.get_serial_ports()))
+
+        port_button = QtGui.QToolButton()
+        self.connect(port_button, QtCore.SIGNAL('clicked()'), self.port_button_clicked) 
+        port_button.setText("Port")
+        vbox.addWidget(port_button)
+        
         
 
         # "Packing"
@@ -91,7 +91,24 @@ class lasercannon_gui(QtGui.QMainWindow):
 
         # Center the window
         self.center()
+
+
+        # Force choose of serial port
+        if not self.serial_port:
+            self.port_button_clicked()
+
         pass
+
+    def port_button_clicked(self, *args):
+        #print "port_button_clicked, args: %s" % args
+        ret = self.serial_port_select_dialog.exec_()
+        # check the return value and rethrow the dialog until a port has been selected
+        if (    ret == 1
+            and self.serial_port_select_dialog.textValue() != 'select port'):
+            self.serial_port_changed(self.serial_port_select_dialog.textValue())
+        elif not self.serial_port:
+            self.port_button_clicked()
+
 
     def get_serial_ports(self):
         import os, fnmatch, re
@@ -119,6 +136,7 @@ class lasercannon_gui(QtGui.QMainWindow):
         except serial.SerialException, e:
             self.alive = False
 
+        
 
     def line_button_clicked(self, *args):
         self.paintarea.tool = 'line'
@@ -144,7 +162,7 @@ class lasercannon_gui(QtGui.QMainWindow):
             #print "start_x=%d, start_y=%d, end_x=%d, end_y=%d" % (data[1].x(), data[1].y(), data[2].x(), data[2].y())
             self.backend.line((data[1].x(), data[1].y()), (data[2].x(), data[2].y()))
         if (tool == 'circle'):
-            origo = (data[0].x(), data[0].y())
+            origo = (data[1].x(), data[1].y())
             r = int(round(helpers().point_distance(origo, (data[1].x(), data[1].y()))))
             self.backend.circle(r, origo)
 
