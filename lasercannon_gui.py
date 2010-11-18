@@ -71,15 +71,13 @@ class lasercannon_gui(QtGui.QMainWindow):
         clear_button.setText("Clear")
         vbox.addWidget(clear_button)
         
+        # Button to choose serial port
         self.serial_port_select_dialog = QtGui.QInputDialog()
         self.serial_port_select_dialog.setComboBoxItems(QtCore.QStringList(['select port',] + self.get_serial_ports()))
-
         port_button = QtGui.QToolButton()
-        self.connect(port_button, QtCore.SIGNAL('clicked()'), self.port_button_clicked) 
+        self.connect(port_button, QtCore.SIGNAL('clicked()'), self.port_button_clicked)
         port_button.setText("Port")
         vbox.addWidget(port_button)
-        
-        
 
         # "Packing"
         vbox.addStretch()
@@ -107,6 +105,8 @@ class lasercannon_gui(QtGui.QMainWindow):
             and self.serial_port_select_dialog.textValue() != 'select port'):
             self.serial_port_changed(self.serial_port_select_dialog.textValue())
         elif not self.serial_port:
+            # Reload port list just in case
+            self.serial_port_select_dialog.setComboBoxItems(QtCore.QStringList(['select port',] + self.get_serial_ports()))
             self.port_button_clicked()
 
 
