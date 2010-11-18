@@ -1,1 +1,3 @@
 Arduino firmware and python code to draw stuff with laser and servos
+
+NOTE: Uses forked version of SimpleFIFO Library, get it here: https://github.com/rambo/simplefifo
