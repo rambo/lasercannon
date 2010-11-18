@@ -1,3 +1,10 @@
+/**
+ * TODO: Switch all comments to english
+ *
+ * NOTE: This is a very preliminary design, and might not work so don't
+ * copy it and expect it to be any good.
+ */
+
 use </Users/rambo/devel/MCAD/servos.scad>
 use </Users/rambo/devel/MCAD/triangles.scad>
 
