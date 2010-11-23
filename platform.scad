@@ -130,7 +130,7 @@ module kiikkulauta()
                         cube([25,15,15]);
                     }
                     // Laserin peilipidike
-                    translate([8,+second_servo_y,5])
+                    translate([8,+second_servo_y,4])
                     {
                         rotate([90,0,45])
                         {
