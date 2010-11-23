@@ -18,12 +18,15 @@ module alusta_c(size_x, size_y, size_z)
     difference()
     {
         cube([size_x,size_y,size_z]);
-        translate([-5,2,2])
+        translate([-5,5,5])
         {
-            cube([size_x+10, size_y-4, size_z]);
+            cube([size_x+10, size_y-10, size_z]);
         }
     }
 }
+
+// alusta_c(45,120,45);
+
 
 /**
  * DX green laser module (plus my own 20mm heatsink)
@@ -75,7 +78,7 @@ module laser(heatsink = 0, x_axle = 110)
 
 module kiikkulauta()
 {
-    assign (servo_height = 30, servo_x = 34, servo_y = 16.9, second_servo_y = 40, platform_width = 120, mirror1_angle = 68)
+    assign (servo_height = 30, servo_x = 34, servo_y = 16.9, second_servo_y = 40, platform_width = 120, mirror1_angle = 70)
     {
         assign(second_servo_height = servo_height-35)
         {
@@ -124,10 +127,10 @@ module kiikkulauta()
                     // Laserin pidike
                     translate([0,25+second_servo_y,1])
                     {
-                        cube([25,15,13]);
+                        cube([25,15,15]);
                     }
                     // Laserin peilipidike
-                    translate([8,+second_servo_y,1])
+                    translate([8,+second_servo_y,5])
                     {
                         rotate([90,0,45])
                         {
@@ -135,7 +138,7 @@ module kiikkulauta()
                         }
                     }
                     // Säteen heijastus
-                    translate([13,second_servo_y,10])
+                    translate([13,second_servo_y,14])
                     {
                         rotate([0,-90+2*mirror1_angle,0])
                         {
@@ -145,7 +148,7 @@ module kiikkulauta()
                 }
                 # alignds420([servo_x,servo_y,servo_height], [90,-90,0],1, 200);
                 # alignds420([servo_x+0.25,second_servo_y,second_servo_height], [0,0,0],1);
-                translate([13,50+second_servo_y,10])
+                translate([13.5,50+second_servo_y,14])
                 {
                     rotate([90,0,0])
                     {
@@ -158,7 +161,7 @@ module kiikkulauta()
     
 }
 
-kiikkulauta();
+ kiikkulauta();
 
 
 
