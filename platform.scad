@@ -52,18 +52,18 @@ module servo_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness=5
             }
             for (i = [0 : slots-1])
             {
-                translate([slot_width*i*2+slot_width, thickness, thickness-1])
+                translate([slot_width*i*2, thickness, thickness-1])
                 {
                     cube([slot_width, thickness+0.5, thickness/2+1]);
                 }
             }
         }
-        # alignds420([servo_x_posx,servo_y_height,16.9], [0,180,90], 1);
+        # alignds420([servo_x_posx,servo_y_height,16.9], [0,180,90], 1, 150);
         for (i = [0 : slots-1])
         {
-            translate([slot_width*i*2, -0.5, -0.5])
+            translate([slot_width*i*2+slot_width, -0.5, -0.5])
             {
-                 cube([slot_width, thickness+0.5, thickness+1]);
+                 cube([slot_width+0.1, thickness+0.5, thickness+1]);
             }
         }
     }
@@ -102,7 +102,7 @@ module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, s
                 }
             }
         }
-        # alignds420([servo_x_posx,servo_x_posy,servo_x_height], [0,0,0], 1);
+        # alignds420([servo_x_posx,servo_x_posy,servo_x_height], [0,0,0], 1, 150);
         for (i = [0 : slots-1])
         {
             translate([slot_width*i*2-0.1, platform_y-thickness, -0.5])
@@ -117,7 +117,23 @@ module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, s
     }
 }
 
-baseplate();
+// baseplate();
+
+
+module platform(platform_x=45, platform_y=120, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
+{
+    // Assign properties by name just in case
+    baseplate(platform_x, platform_y, thickness, servo_x_posx, servo_x_posy, servo_y_height, slots);
+    translate([0,platform_y,0])
+    {
+        rotate([90,0,0])
+        {
+            servo_wall(platform_x, servo_y_height, servo_x_posx, thickness, slots);
+        }
+    }
+}
+
+platform();
 
 /**
  * DX green laser module (plus my own 20mm heatsink)
