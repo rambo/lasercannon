@@ -57,17 +57,23 @@ module servo_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness=5
  * @todo: place laser
  * @todo: place mirror
  */
-module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
+module baseplate(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
 {
     // No not add semicolons to these assigns (context)
     assign(slot_width = platform_x/2/slots)
     assign(servo_x_height=servo_y_height-35)
     assign(servo_support_z=13+servo_x_height)
+    assign(laser_x=13.5, laser_y=50+servo_x_posy, laser_z=10+thickness-1)
+    // TODO: Calculate based on servo_y_height
+    assign(mirror1_angle=70)
     difference()
     {
         union()
         {
+            // Base
             cube([platform_x,platform_y,thickness]);
+
+            // servo_x supports
             translate([servo_x_posx-5.5, servo_x_posy+16.7, thickness-1])
             {
                 cube([11,5,servo_support_z]);
@@ -76,6 +82,34 @@ module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, s
             {
                 cube([11,5,servo_support_z]);
             }
+
+            // Laser support
+            translate([laser_x-(10+3.5),laser_y-20, 0])
+            {
+                cube([20+2*3.5,10,laser_z+5]);
+            }
+
+            // Laser mirror holder
+            // TODO: Calculate the magic number (8) from known variables
+            translate([8,servo_x_posy,thickness-1])
+            {
+                rotate([90,0,45])
+                {
+                    // TODO: Where do the magic numbers (7,7) come from ?
+                    a_triangle(mirror1_angle, 7, 7);
+                }
+            }
+            // laser reflection helper
+            // TODO: Calculate the magic numbers (13,14) from known variables
+            translate([13,servo_x_posy,14])
+            {
+                rotate([0,-90+2*mirror1_angle,0])
+                {
+                    % cylinder(r=0.5, h=40, $fn=6, center=false);
+                }
+            }
+
+            // joining slots
             for (i = [0 : slots-1])
             {
                 translate([slot_width*i*2+slot_width, platform_y-thickness*1.5, thickness-1])
@@ -90,6 +124,7 @@ module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, s
             }
         }
         # alignds420([servo_x_posx,servo_x_posy,servo_x_height], [0,0,0], 1, 150);
+        // joining slots
         for (i = [0 : slots-1])
         {
             translate([slot_width*i*2-0.1, platform_y-thickness, -0.5])
@@ -101,6 +136,13 @@ module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, s
                  cube([slot_width+0.1, thickness+0.5, thickness+1]);
             }
         }
+        translate([laser_x,laser_y, laser_z])
+        {
+            rotate([90,0,0])
+            {
+                # laser(1);
+            }
+        }
     }
 }
 
@@ -110,7 +152,7 @@ module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, s
 /**
  * Module to assemble the parts for the seesaw Y-platform
  */
-module y_platform(platform_x=45, platform_y=120, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
+module y_platform(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
 {
     // Assign properties by name just in case
     baseplate(platform_x, platform_y, thickness, servo_x_posx, servo_x_posy, servo_y_height, slots);
@@ -188,8 +230,6 @@ module bearing_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness
 
 // bearing_wall();
 
-
-
 /**
  * DX green laser module (plus my own 20mm heatsink)
  */
@@ -231,103 +271,12 @@ module laser(heatsink = 0, x_axle = 110)
 // laser();
 
 /** 
+ * Old notes, but I might still need them later (dimensions for the Seeeduino board)
+ *
  * seeduino slotti
  * millin syvennykset/sisennykset (miten ne urat nyt haluaa ajatella) mahtuu reinoille
- * leveys 54mm
- * syvyys 69mm 
- * paksuus 1.5mm
+ * leveys 54mm (width)
+ * syvyys 69mm  (lenght)
+ * paksuus 1.5mm (thickness [the PCB, not counting components...])
  */
-
-/**
- * Keeping this for reference
-
-module kiikkulauta()
-{
-    assign (servo_height = 30, servo_x = 34, servo_y = 16.9, second_servo_y = 40, platform_width = 120, mirror1_angle = 70)
-    {
-        assign(second_servo_height = servo_height-35)
-        {
-            // Alusta ja siihen servojen reiät+tuet
-            difference()
-            {
-                union() 
-                {
-                    alusta_c(45,platform_width,45);
-                    // 1. servon ruuviblokit
-                    translate([servo_x+6, servo_y-16, servo_height-6])
-                    {
-                        cube([5,7, 12]);
-                        // overhang-support
-                        rotate([0,90,0])
-                        {
-                           triangle(7,7,5);
-                        }
-                    }
-                    translate([servo_x-21.8, servo_y-16, servo_height-6])
-                    {
-                        cube([5,7, 12]);
-                        // overhang-support
-                        rotate([0,90,0])
-                        {
-                            triangle(7,7,5);
-                        }
-                    }
-                    // 2. servon tuet/ruuviblokit
-                    translate([servo_x-5.75,second_servo_y-10.9, 0.5])
-                    {
-                        cube([12,4.9, second_servo_height+16.4]);
-                    }
-                    translate([servo_x-5.75,second_servo_y+16.8, 0.5])
-                    {
-                        cube([12,4.9, second_servo_height+16.4]);
-                    }
-                    // Alustan tukiakseli/laakeri
-                    translate([servo_x, platform_width+5, servo_height])
-                    {
-                        rotate([90,0,0])
-                        {
-                             cylinder(r=1, h=6, $fn=16);
-                        }
-                    }
-                    // Laserin pidike
-                    translate([0,25+second_servo_y,1])
-                    {
-                        cube([25,15,15]);
-                    }
-                    // Laserin peilipidike
-                    translate([8,+second_servo_y,4])
-                    {
-                        rotate([90,0,45])
-                        {
-                            a_triangle(mirror1_angle, 7, 7);
-                        }
-                    }
-                    // Säteen heijastus
-                    translate([13,second_servo_y,14])
-                    {
-                        rotate([0,-90+2*mirror1_angle,0])
-                        {
-                            % cylinder(r=0.5, h=40, $fn=6, center=false);
-                        }
-                    }
-                }
-                # alignds420([servo_x,servo_y,servo_height], [90,-90,0],1, 200);
-                # alignds420([servo_x+0.25,second_servo_y,second_servo_height], [0,0,0],1);
-                translate([13.5,50+second_servo_y,14])
-                {
-                    rotate([90,0,0])
-                    {
-                        # laser(1);
-                    }
-                }
-            }
-        }
-    }
-    
-}
-
-kiikkulauta();
-*/
-
-
 
