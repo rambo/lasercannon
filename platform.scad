@@ -1,8 +1,7 @@
 /**
  * TODO: Switch all comments to english
  *
- * NOTE: This is a very preliminary design, and might not work so don't
- * copy it and expect it to be any good.
+ * NOTE: This is a very preliminary design, and might not work so caveat emptor
  */
 
 use </Users/rambo/devel/MCAD/servos.scad>
@@ -35,7 +34,7 @@ module servo_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness=5
             {
                 translate([slot_width*i*2, thickness, thickness-1])
                 {
-                    cube([slot_width, thickness+0.5, thickness/2+1]);
+                    cube([slot_width, thickness/2, thickness/2+1]);
                 }
             }
         }
@@ -79,9 +78,9 @@ module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, s
             }
             for (i = [0 : slots-1])
             {
-                translate([slot_width*i*2+slot_width, platform_y-thickness*2, thickness-1])
+                translate([slot_width*i*2+slot_width, platform_y-thickness*1.5, thickness-1])
                 {
-                    cube([slot_width-0.1, thickness, thickness/2+1]);
+                    cube([slot_width-0.1, thickness/2, thickness/2+1]);
                 }
                 // These need to be taller since the wall module has no support tabs 
                 translate([slot_width*i*2, thickness-0.1, thickness-1])
