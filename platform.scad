@@ -13,6 +13,7 @@ use </Users/rambo/devel/MCAD/triangles.scad>
  * Laakeri: ulko halk 22mm sisähalk 8mm
  */
 
+/*
 module alusta_c(size_x, size_y, size_z)
 {
     difference()
@@ -24,9 +25,99 @@ module alusta_c(size_x, size_y, size_z)
         }
     }
 }
-
 // alusta_c(45,120,45);
 
+*/
+
+/**
+ * Servo-wall piece of the platform, meant to be printed on it's side
+ */
+module servo_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness=5, slots = 4)
+{
+    // No not add semicolons to these assigns (context)
+    assign(slot_width = platform_x/2/slots) 
+    assign(wall_height = servo_y_height+15)
+    difference()
+    {
+        union()
+        {
+            cube([platform_x,wall_height,thickness]);
+            translate([servo_x_posx+5.3, servo_y_height-5.5, thickness-1])
+            {
+                cube([5,11,10-thickness]);
+            }
+            translate([servo_x_posx-21, servo_y_height-5.5, thickness-1])
+            {
+                cube([5,11,10-thickness]);
+            }
+            for (i = [0 : slots-1])
+            {
+                translate([slot_width*i*2+slot_width, thickness, thickness-1])
+                {
+                    cube([slot_width, thickness+0.5, thickness/2+1]);
+                }
+            }
+        }
+        # alignds420([servo_x_posx,servo_y_height,16.9], [0,180,90], 1);
+        for (i = [0 : slots-1])
+        {
+            translate([slot_width*i*2, -0.5, -0.5])
+            {
+                 cube([slot_width, thickness+0.5, thickness+1]);
+            }
+        }
+    }
+}
+
+// servo_wall();
+
+module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
+{
+    // No not add semicolons to these assigns (context)
+    assign(slot_width = platform_x/2/slots)
+    assign(servo_x_height=servo_y_height-35)
+    assign(servo_support_z=13+servo_x_height)
+    difference()
+    {
+        union()
+        {
+            cube([platform_x,platform_y,thickness]);
+            translate([servo_x_posx-5.5, servo_x_posy+16.7, thickness-1])
+            {
+                cube([11,5,servo_support_z]);
+            }
+            translate([servo_x_posx-5.5, servo_x_posy-10.7, thickness-1])
+            {
+                cube([11,5,servo_support_z]);
+            }
+            for (i = [0 : slots-1])
+            {
+                translate([slot_width*i*2+slot_width, platform_y-thickness*2, thickness-1])
+                {
+                    cube([slot_width-0.1, thickness, thickness/2+1]);
+                }
+                translate([slot_width*i*2, thickness-0.1, thickness-1])
+                {
+                    cube([slot_width, thickness+0.5, thickness/2+1]);
+                }
+            }
+        }
+        # alignds420([servo_x_posx,servo_x_posy,servo_x_height], [0,0,0], 1);
+        for (i = [0 : slots-1])
+        {
+            translate([slot_width*i*2-0.1, platform_y-thickness, -0.5])
+            {
+                 cube([slot_width+0.1, thickness+0.5, thickness+1]);
+            }
+            translate([slot_width*i*2+slot_width, -0.5, -0.5])
+            {
+                 cube([slot_width+0.1, thickness+0.5, thickness+1]);
+            }
+        }
+    }
+}
+
+baseplate();
 
 /**
  * DX green laser module (plus my own 20mm heatsink)
@@ -75,7 +166,7 @@ module laser(heatsink = 0, x_axle = 110)
  * syvyys 69mm 
  * paksuus 1.5mm
  */
-
+/*
 module kiikkulauta()
 {
     assign (servo_height = 30, servo_x = 34, servo_y = 16.9, second_servo_y = 40, platform_width = 120, mirror1_angle = 70)
@@ -161,7 +252,8 @@ module kiikkulauta()
     
 }
 
- kiikkulauta();
+kiikkulauta();
+*/
 
 
 
