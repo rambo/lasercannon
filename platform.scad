@@ -9,25 +9,6 @@ use </Users/rambo/devel/MCAD/servos.scad>
 use </Users/rambo/devel/MCAD/triangles.scad>
 
 
-/**
- * Laakeri: ulko halk 22mm sisähalk 8mm
- */
-
-/*
-module alusta_c(size_x, size_y, size_z)
-{
-    difference()
-    {
-        cube([size_x,size_y,size_z]);
-        translate([-5,5,5])
-        {
-            cube([size_x+10, size_y-10, size_z]);
-        }
-    }
-}
-// alusta_c(45,120,45);
-
-*/
 
 /**
  * Servo-wall piece of the platform, meant to be printed on it's side
@@ -71,6 +52,12 @@ module servo_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness=5
 
 // servo_wall();
 
+/**
+ * Baseplate with the X servo & laser
+ *
+ * @todo: place laser
+ * @todo: place mirror
+ */
 module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
 {
     // No not add semicolons to these assigns (context)
@@ -96,9 +83,10 @@ module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, s
                 {
                     cube([slot_width-0.1, thickness, thickness/2+1]);
                 }
+                // These need to be taller since the wall module has no support tabs 
                 translate([slot_width*i*2, thickness-0.1, thickness-1])
                 {
-                    cube([slot_width, thickness+0.5, thickness/2+1]);
+                    cube([slot_width, thickness+0.5, thickness+1]);
                 }
             }
         }
@@ -120,7 +108,10 @@ module baseplate(platform_x=45, platform_y=120, thickness= 5, servo_x_posx=34, s
 // baseplate();
 
 
-module platform(platform_x=45, platform_y=120, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
+/**
+ * Module to assemble the parts for the seesaw Y-platform
+ */
+module y_platform(platform_x=45, platform_y=120, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
 {
     // Assign properties by name just in case
     baseplate(platform_x, platform_y, thickness, servo_x_posx, servo_x_posy, servo_y_height, slots);
@@ -131,9 +122,74 @@ module platform(platform_x=45, platform_y=120, thickness=5, servo_x_posx=34, ser
             servo_wall(platform_x, servo_y_height, servo_x_posx, thickness, slots);
         }
     }
+    translate([0,thickness,0])
+    {
+        rotate([90,0,0])
+        {
+            bearing_wall(platform_x, servo_y_height, servo_x_posx, thickness, slots);
+        }
+    }
 }
 
-platform();
+ y_platform();
+
+/**
+ * Bearing-wall piece of the platform, meant to be printed on it's side
+ */
+module bearing_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness=5, slots = 4)
+{
+    // No not add semicolons to these assigns (context)
+    assign(slot_width = platform_x/2/slots) 
+    assign(wall_height = servo_y_height+15)
+    difference()
+    {
+        union()
+        {
+            cube([platform_x,wall_height,thickness]);
+            // Additional supports for the bearing
+            translate([servo_x_posx,servo_y_height,0])
+            {
+                cylinder(r=13, h=7, $fn=30);
+            }
+            
+            /**
+             * The end up on the wrong side when the wall is lifted to position
+            for (i = [0 : slots-1])
+            {
+                translate([slot_width*i*2+slot_width-0.1, thickness, thickness-1])
+                {
+                    cube([slot_width, thickness+0.5, thickness/2+1]);
+                }
+            }
+             */
+        }
+        // Bearing holes
+        translate([servo_x_posx,servo_y_height,0])
+        {
+            translate([0,0,2])
+            {
+                // The skateboard bearing (outer r=11mm inner r=4mm z=7mm)
+                cylinder(r=11, h=7, $fn=30);
+            }
+            translate([0,0,-2])
+            {
+                // Drill hole
+                cylinder(r=4, h=12, $fn=30);
+            }
+        }
+        for (i = [0 : slots-1])
+        {
+            translate([slot_width*i*2-0.1, -0.5, -0.5])
+            {
+                 cube([slot_width+0.1, thickness+0.5, thickness+1]);
+            }
+        }
+    }
+}
+
+// bearing_wall();
+
+
 
 /**
  * DX green laser module (plus my own 20mm heatsink)
@@ -182,7 +238,10 @@ module laser(heatsink = 0, x_axle = 110)
  * syvyys 69mm 
  * paksuus 1.5mm
  */
-/*
+
+/**
+ * Keeping this for reference
+
 module kiikkulauta()
 {
     assign (servo_height = 30, servo_x = 34, servo_y = 16.9, second_servo_y = 40, platform_width = 120, mirror1_angle = 70)
