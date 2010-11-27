@@ -65,7 +65,7 @@ module baseplate(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, se
     assign(servo_support_z=13+servo_x_height)
     assign(laser_x=13.5, laser_y=50+servo_x_posy, laser_z=10+thickness-1)
     // TODO: Calculate based on servo_y_height
-    assign(mirror1_angle=70)
+    assign(mirror1_angle=67)
     difference()
     {
         union()
@@ -152,7 +152,7 @@ module baseplate(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, se
 /**
  * Module to assemble the parts for the seesaw Y-platform
  */
-module y_platform(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
+module y_platform(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=35, slots=5)
 {
     // Assign properties by name just in case
     baseplate(platform_x, platform_y, thickness, servo_x_posx, servo_x_posy, servo_y_height, slots);
@@ -170,9 +170,50 @@ module y_platform(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, s
             bearing_wall(platform_x, servo_y_height, servo_x_posx, thickness, slots);
         }
     }
+    translate([servo_x_posx+5.5,servo_x_posy+10,servo_y_height-7])
+    {
+        rotate([90,0,-90])
+        {
+            servo_mirror_holder();
+        }
+    }
 }
 
  y_platform();
+
+/**
+ * Hold mirror, goes on top of the X servo
+ */
+module servo_mirror_holder(mirror2_angle=45, base_thickness=3, mirror1_angle=67)
+{
+    assign(mirror1_reflection_angle=-90+2*mirror1_angle)
+    assign(mirror2_reflection_angle=90-mirror1_reflection_angle-mirror2_angle)
+    union()
+    {
+        cube([20, 15, base_thickness]);
+        translate([10-(7/2),11,base_thickness-1])
+        {
+            rotate([0,-90,180])
+            {
+                a_triangle(mirror2_angle, 7, 7);
+            }
+            // laser reflection helper
+            // TODO: Calculate the magic numbers (13,14) from known variables
+            translate([7/2,-4,0])
+            {
+                rotate([mirror2_reflection_angle,0,0])
+                {
+                    % cylinder(r=0.5, h=40, $fn=6, center=false);
+                }
+            }
+        }
+        cube([20, base_thickness, 10]);
+    }
+
+}
+
+// servo_mirror_holder();
+
 
 /**
  * Bearing-wall piece of the platform, meant to be printed on it's side
@@ -229,6 +270,7 @@ module bearing_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness
 }
 
 // bearing_wall();
+
 
 /**
  * DX green laser module (plus my own 20mm heatsink)
