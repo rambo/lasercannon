@@ -16,7 +16,7 @@ module servo_wall(platform_x=45, servo_y_height=35, servo_x_posx=34, thickness=5
 {
     // No not add semicolons to these assigns (context)
     assign(slot_width = platform_x/2/slots) 
-    assign(wall_height = servo_y_height+15)
+    assign(wall_height = servo_y_height+12)
     difference()
     {
         union()
@@ -45,6 +45,15 @@ module servo_wall(platform_x=45, servo_y_height=35, servo_x_posx=34, thickness=5
             {
                  cube([slot_width+0.1, thickness+0.5, thickness+1]);
             }
+        }
+        // Shape the piece a bit
+        translate([-1,15,-1])
+        {
+            cube([10,wall_height,thickness+2]);
+        }
+        translate([15,15,-1])
+        {
+            cube([25,10,thickness+2]);
         }
     }
 }
@@ -143,6 +152,22 @@ module baseplate(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, se
                 # laser(1);
             }
         }
+        // Shape the piece a bit
+        translate([7, 20, -1])
+        {
+            triangle(20, platform_x-15, thickness+2);
+        }
+        translate([platform_x-7, platform_y-20, -1])
+        {
+            rotate([0,0,180])
+            {
+                triangle(20, platform_x-15, thickness+2);
+            }
+        }
+        translate([7, 57, -1])
+        {
+            cube([18, 15, thickness+2]);
+        }
     }
 }
 
@@ -152,7 +177,7 @@ module baseplate(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, se
 /**
  * Module to assemble the parts for the seesaw Y-platform
  */
-module y_platform(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=35, slots=5)
+module u_platform(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=35, slots=5)
 {
     // Assign properties by name just in case
     baseplate(platform_x, platform_y, thickness, servo_x_posx, servo_x_posy, servo_y_height, slots);
@@ -179,7 +204,7 @@ module y_platform(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, s
     }
 }
 
- y_platform();
+ u_platform();
 
 /**
  * Hold mirror, goes on top of the X servo
@@ -222,7 +247,7 @@ module bearing_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness
 {
     // No not add semicolons to these assigns (context)
     assign(slot_width = platform_x/2/slots) 
-    assign(wall_height = servo_y_height+15)
+    assign(wall_height = servo_y_height+12)
     difference()
     {
         union()
@@ -266,6 +291,25 @@ module bearing_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness
                  cube([slot_width+0.1, thickness+0.5, thickness+1]);
             }
         }
+        // shape the piece a bit
+        difference()
+        {
+            translate([-1,15,-1])
+            {
+                cube([platform_x-20,wall_height-10,thickness+2]);
+            }
+            // Bearing holes
+            translate([servo_x_posx,servo_y_height,-1])
+            {
+                translate([0,0,0])
+                {
+                    // The skateboard bearing (outer r=11mm inner r=4mm z=7mm)
+                    cylinder(r=15, h=7+2, $fn=30);
+                }
+            }
+            
+        }
+
     }
 }
 
