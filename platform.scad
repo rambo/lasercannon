@@ -12,7 +12,7 @@ use </Users/rambo/devel/MCAD/triangles.scad>
 /**
  * Servo-wall piece of the platform, meant to be printed on it's side
  */
-module servo_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness=5, slots = 4)
+module servo_wall(platform_x=45, servo_y_height=35, servo_x_posx=34, thickness=5, slots = 4)
 {
     // No not add semicolons to these assigns (context)
     assign(slot_width = platform_x/2/slots) 
@@ -57,7 +57,7 @@ module servo_wall(platform_x=45, servo_y_height=30, servo_x_posx=34, thickness=5
  * @todo: place laser
  * @todo: place mirror
  */
-module baseplate(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=30, slots=5)
+module baseplate(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, servo_x_posy=50, servo_y_height=35, slots=5)
 {
     // No not add semicolons to these assigns (context)
     assign(slot_width = platform_x/2/slots)
