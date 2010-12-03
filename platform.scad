@@ -172,6 +172,12 @@ module baseplate(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, se
 }
 
 // baseplate();
+/*
+rotate([0,0,90])
+{
+    baseplate();
+}
+*/
 
 
 /**
