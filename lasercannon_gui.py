@@ -65,6 +65,14 @@ class lasercannon_gui(QtGui.QMainWindow):
         self.tool_buttons.addButton(circle_button)
         vbox.addWidget(circle_button)
 
+        span_button = QtGui.QToolButton()
+        self.connect(span_button, QtCore.SIGNAL('clicked()'), self.span_button_clicked) 
+        span_button.setCheckable(True)
+        span_button.setText("Span")
+        self.tool_buttons.addButton(span_button)
+        vbox.addWidget(span_button)
+
+
         ## Buttons for other things (clear, terminal view, etc)
         clear_button = QtGui.QToolButton()
         self.connect(clear_button, QtCore.SIGNAL('clicked()'), self.paintarea.clear) 
@@ -143,6 +151,9 @@ class lasercannon_gui(QtGui.QMainWindow):
 
     def circle_button_clicked(self, *args):
         self.paintarea.tool = 'circle'
+
+    def span_button_clicked(self, *args):
+        self.paintarea.tool = 'span'
 
     def center(self):
         screen = QtGui.QDesktopWidget().screenGeometry()
