@@ -7,8 +7,6 @@
 use </Users/rambo/devel/MCAD/servos.scad>
 use </Users/rambo/devel/MCAD/triangles.scad>
 
-
-
 /**
  * Servo-wall piece of the platform, meant to be printed on it's side
  */
@@ -172,13 +170,6 @@ module baseplate(platform_x=45, platform_y=130, thickness=5, servo_x_posx=34, se
 }
 
 // baseplate();
-/*
-rotate([0,0,90])
-{
-    baseplate();
-}
-*/
-
 
 /**
  * Module to assemble the parts for the seesaw Y-platform
