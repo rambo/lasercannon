@@ -11,11 +11,22 @@
 #define D_OUT_PIN_MIN 2
 #define D_OUT_PIN_MAX 5
 
+/**
+ * P-Channel MOSFET needs to be driven LOW in the gate to allow
+ * it to conduct.
+ */
+#define LASER_ON LOW
+#define LASER_OFF HIGH
+
 // Microseconds it takes for servo to travel one from (pulse width) uSec to uSec+1
 byte servo_delays[SERVO_CHANNELS] = 
 {
+  /*
     150,
     150,
+   */
+    75,
+    75,
 };
 
 //servo constants -- trim as needed http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1222623026/2
@@ -107,7 +118,7 @@ void setup()
     for (byte pin = D_OUT_PIN_MIN; pin <= D_OUT_PIN_MAX; pin++)
     {
         pinMode(pin, OUTPUT);
-        digitalWrite(pin, HIGH);
+        digitalWrite(pin, LASER_ON);
     }
 
     timer2_offset = (int)((257.0-(TIMER_CLOCK_FREQ / 150))+0.5); //offset timer for 150Hz
@@ -418,7 +429,14 @@ void loop()
 void laser(byte channel, boolean state)
 {
     // TODO: make sure the pin is in range
-    digitalWrite(D_OUT_PIN_MIN + channel, state);
+    if (state)
+    {
+        digitalWrite(D_OUT_PIN_MIN + channel, LASER_ON);
+    }
+    else
+    {
+        digitalWrite(D_OUT_PIN_MIN + channel, LASER_OFF);
+    }
 }
 
 void vector(byte start_channel, int angle, int power, int origo_x, int origo_y)
@@ -444,12 +462,12 @@ void line(byte start_channel, int start_x, int start_y, int end_x, int end_y)
 
     byte end_channel = start_channel + 1;
     // Set servo to initial position with laser off.
-    laser(0, LOW);
+    laser(0, LASER_OFF);
     queue_servo_position(start_channel, start_x);
     queue_servo_position(end_channel, start_y);
     wait_for_servo(start_channel);
     wait_for_servo(end_channel);
-    laser(0, HIGH);
+    laser(0, LASER_ON);
     queue_servo_position(start_channel, end_x);
     queue_servo_position(end_channel, end_y);
 }
@@ -496,7 +514,7 @@ void span(byte start_channel, int radius, int origo_x, int origo_y, byte range_s
     // Set servo to initial position with laser off.
     wait_for_servo(start_channel);
     wait_for_servo(end_channel);
-    laser(0, LOW);
+    laser(0, LASER_OFF);
     float rad = deg2rad(range_start);
     int x = int(round(cos(rad) * radius + origo_x));
     int y = int(round(sin(rad) * radius + origo_y));
@@ -504,7 +522,7 @@ void span(byte start_channel, int radius, int origo_x, int origo_y, byte range_s
     queue_servo_position(end_channel, y);
     wait_for_servo(start_channel);
     wait_for_servo(end_channel);
-    laser(0, HIGH);
+    laser(0, LASER_ON);
 
     byte i = 0;
     for (float angle = range_start; angle <= range_end; angle += range_step)
