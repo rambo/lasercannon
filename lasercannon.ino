@@ -122,14 +122,14 @@ void setup()
     }
 
     timer2_offset = (int)((257.0-(TIMER_CLOCK_FREQ / 150))+0.5); //offset timer for 150Hz
-    Serial.print("timer2_offset ");
+    Serial.print(F("timer2_offset "));
     Serial.println(timer2_offset, DEC);
 
     //Timer2 Settings: Timer Prescaler /1024, WGM mode 0
     TCCR2A = 0;
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20);
 
-    Serial.print("TCCR2B set to: ");
+    Serial.print(F("TCCR2B set to: "));
     Serial.println(TCCR2B, BIN);
 
     //Timer2 Overflow Interrupt Enable  
@@ -138,7 +138,7 @@ void setup()
     TCNT2 = timer2_offset;
 
 
-    Serial.println("Board booted");
+    Serial.println(F("Board booted"));
     delay(5000);
     
 }
@@ -149,7 +149,7 @@ inline void read_command_bytes()
     {
         incoming_command[incoming_position] = Serial.read();
 
-        Serial.print("DEBUG: Got byte: ");
+        Serial.print(F("DEBUG: Got byte: "));
         Serial.println(incoming_command[incoming_position], HEX);
 
         // Check for line end and in such case do special things
@@ -168,12 +168,12 @@ inline void read_command_bytes()
             //strncpy(command_queue[command_queue_end], incoming_command, COMMAND_STRING_SIZE);
             memcpy(command_queue[command_queue_end], incoming_command, COMMAND_STRING_SIZE);
 
-            Serial.print("DEBUG: Got command: '");
+            Serial.print(F("DEBUG: Got command: '"));
             for (byte i=0; i <= COMMAND_STRING_SIZE; i++)
             {
                 Serial.print(command_queue[command_queue_end][i]);
             }
-            Serial.println("'");
+            Serial.println(F("'"));
 
             // Using memset to clear the incoming command
             memset(&incoming_command, 0, COMMAND_STRING_SIZE+2);
@@ -181,19 +181,19 @@ inline void read_command_bytes()
             command_queue_end++;
             if (command_queue_end == COMMAND_QUEUE_SIZE)
             {
-                Serial.println("NOTICE: Command buffer full");
+                Serial.println(F("NOTICE: Command buffer full"));
                 for (byte i=0; i <= COMMAND_QUEUE_SIZE; i++)
                 {
-                    Serial.print("DEBUG: command_buffer[");
+                    Serial.print(F("DEBUG: command_buffer["));
                     Serial.print(i, DEC);
-                    Serial.print("]: ");
+                    Serial.print(F("]: "));
                     for (byte i2=0; i2 <= COMMAND_STRING_SIZE; i2++)
                     {
                         Serial.print(command_queue[i][i2]);
                     }
-                    Serial.println("");
+                    Serial.println(F(""));
                 }
-                Serial.println("NOTICE: Next command will overwrite last one");
+                Serial.println(F("NOTICE: Next command will overwrite last one"));
                 command_queue_end--;
             }
             incoming_position = 0;
@@ -204,9 +204,9 @@ inline void read_command_bytes()
         // Sanity check buffer sizes
         if (incoming_position > COMMAND_STRING_SIZE+2)
         {
-            Serial.print("PANIC: No end-of-line seen and incoming_position=");
+            Serial.print(F("PANIC: No end-of-line seen and incoming_position="));
             Serial.print(incoming_position, DEC);
-            Serial.println(" clearing buffers");
+            Serial.println(F(" clearing buffers"));
             
             memset(&incoming_command, 0, COMMAND_STRING_SIZE+2);
             incoming_position = 0;
@@ -226,20 +226,20 @@ inline void process_commands()
 inline int bytes2int(byte i1, byte i2)
 {
     /*
-    Serial.print("bytes2int: i1=");
+    Serial.print(F("bytes2int: i1="));
     Serial.print(i1, BIN);
-    Serial.print(" i2=");
+    Serial.print(F(" i2="));
     Serial.print(i2, BIN);
     */
     int tmp = i1;
     tmp <<= 8;
     tmp += i2;
     /*
-    Serial.print(" returning: ");
+    Serial.print(F(" returning: "));
     Serial.print(tmp, DEC);
-    Serial.print(" (");
+    Serial.print(F(" ("));
     Serial.print(tmp, BIN);
-    Serial.println(")");
+    Serial.println(F(")"));
     */
     return tmp;
 }
@@ -279,23 +279,23 @@ inline void parse_command(byte key)
         // void circle(byte start_channel, int radius, int origo_x, int origo_y, byte range_step)
         case 0x44: // ASCII "D"
         {
-            //Serial.println("DEBUG pase_command: E matched");
+            //Serial.println(F("DEBUG pase_command: E matched"));
             int radius = bytes2int(command_queue[key][2], command_queue[key][3]);
             int origo_x = bytes2int(command_queue[key][4], command_queue[key][5]);
             int origo_y = bytes2int(command_queue[key][6], command_queue[key][7]);
 
             /*
-            Serial.print("DEBUG Calling: circle(");
+            Serial.print(F("DEBUG Calling: circle("));
             Serial.print(command_queue[key][1], DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(radius, DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(origo_x, DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(origo_y, DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(command_queue[key][8], DEC);
-            Serial.println(") ");
+            Serial.println(F(") "));
             */
 
             circle(command_queue[key][1], radius, origo_x, origo_y, command_queue[key][8]);
@@ -304,53 +304,53 @@ inline void parse_command(byte key)
         // void span(byte start_channel, int radius, int origo_x, int origo_y, byte range_step, int range_start, int range_end)
         case 0x45: // ASCII "E"
         {
-            //Serial.println("DEBUG pase_command: F matched");
+            //Serial.println(F("DEBUG pase_command: F matched"));
             int radius = bytes2int(command_queue[key][2], command_queue[key][3]);
             int origo_x = bytes2int(command_queue[key][4], command_queue[key][5]);
             int origo_y = bytes2int(command_queue[key][6], command_queue[key][7]);
             int range_start = bytes2int(command_queue[key][9], command_queue[key][10]);
             int range_end = bytes2int(command_queue[key][11], command_queue[key][12]);
             /*
-            Serial.print("DEBUG Calling: span(");
+            Serial.print(F("DEBUG Calling: span("));
             Serial.print(command_queue[key][1], DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(radius, DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(origo_x, DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(origo_y, DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(command_queue[key][8], DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(range_start, DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(range_end, DEC);
-            Serial.println(") ");
+            Serial.println(F(") "));
             */
             span(command_queue[key][1], radius, origo_x, origo_y, command_queue[key][8], range_start, range_end);
         }
           break;
         case 0x46: // ASCII "F", laser state and xy
         {
-            Serial.print("DEBUG Calling: laser(");
+            Serial.print(F("DEBUG Calling: laser("));
             Serial.print(command_queue[key][1], DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(command_queue[key][2], DEC);
-            Serial.println(") ");
+            Serial.println(F(") "));
             laser(command_queue[key][1], command_queue[key][2]);
             int x = bytes2int(command_queue[key][4], command_queue[key][5]);
             int y = bytes2int(command_queue[key][6], command_queue[key][7]);
-            Serial.print("DEBUG Calling: queue_servo_position(");
+            Serial.print(F("DEBUG Calling: queue_servo_position("));
             Serial.print(command_queue[key][3], DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(x, DEC);
-            Serial.println(") ");
+            Serial.println(F(") "));
             queue_servo_position(command_queue[key][3], x);
-            Serial.print("DEBUG Calling: queue_servo_position(");
+            Serial.print(F("DEBUG Calling: queue_servo_position("));
             Serial.print(command_queue[key][3]+1, DEC);
-            Serial.print(", ");
+            Serial.print(F(", "));
             Serial.print(y, DEC);
-            Serial.println(") ");
+            Serial.println(F(") "));
             queue_servo_position(command_queue[key][3]+1, y);
         }
           break;
@@ -358,14 +358,14 @@ inline void parse_command(byte key)
         case 0x77: // ASCII "w"
             for (byte i=0; i <= command_queue_end; i++)
             {
-                Serial.print("INFO: command_buffer[");
+                Serial.print(F("INFO: command_buffer["));
                 Serial.print(i, DEC);
-                Serial.print("]: ");
+                Serial.print(F("]: "));
                 for (byte i2=0; i2 <= COMMAND_STRING_SIZE; i2++)
                 {
                     Serial.print(command_queue[i][i2]);
                 }
-                Serial.println("");
+                Serial.println(F(""));
             }
             command_queue[key][0] = 0x0;
             break;
@@ -388,7 +388,7 @@ inline void parse_command(byte key)
             }
             break;
         default:
-          Serial.print("ERROR pase_command: command not recognized, command_queue[key][0]=");
+          Serial.print(F("ERROR pase_command: command not recognized, command_queue[key][0]="));
           Serial.println(command_queue[key][0]);
     }
 }
@@ -401,7 +401,7 @@ void reset_command_queue()
         memset(&command_queue[i], 0, COMMAND_STRING_SIZE);
     }
     command_queue_end = 0;
-    Serial.println("INFO: Command queue reset");
+    Serial.println(F("INFO: Command queue reset"));
 }
 
 unsigned int loop_i;
@@ -414,13 +414,13 @@ void loop()
     {
         check_servo_queue();
         /*
-        Serial.print("DEBUG: loop #");
+        Serial.print(F("DEBUG: loop #"));
         Serial.print(loop_i, DEC);
-        Serial.print(" waiting for servo ");
+        Serial.print(F(" waiting for servo "));
         Serial.print(channel, DEC);
-        Serial.print(" that has ");
+        Serial.print(F(" that has "));
         Serial.print(servo_queue[channel].count(), DEC);
-        Serial.println(" commands in queue");
+        Serial.println(F(" commands in queue"));
         */
         wait_for_servo(channel);
     }
@@ -450,13 +450,13 @@ void vector(byte start_channel, int angle, int power, int origo_x, int origo_y)
 void line(byte start_channel, int start_x, int start_y, int end_x, int end_y)
 {
     /*
-    Serial.print("line: start_x=");
+    Serial.print(F("line: start_x="));
     Serial.print(start_x, DEC);
-    Serial.print(" start_y=");
+    Serial.print(F(" start_y="));
     Serial.println(start_y, DEC);
-    Serial.print("line: end_x=");
+    Serial.print(F("line: end_x="));
     Serial.print(end_x, DEC);
-    Serial.print(" end_y=");
+    Serial.print(F(" end_y="));
     Serial.println(end_y, DEC);
     */
 
@@ -478,12 +478,12 @@ void line(byte start_channel, int start_x, int start_y, int end_x, int end_y)
 inline void circle(byte start_channel, int radius, int origo_x, int origo_y, byte range_step)
 {
     /*
-    Serial.print("circle: origo_x=");
+    Serial.print(F("circle: origo_x="));
     Serial.print(origo_x, DEC);
-    Serial.print(" origo_y=");
+    Serial.print(F(" origo_y="));
     Serial.println(origo_y, DEC);
-    Serial.print("circle: radius=");
-    Serial.print(" range_step=");
+    Serial.print(F("circle: radius="));
+    Serial.print(F(" range_step="));
     Serial.println(range_step, DEC);
     */
     span(start_channel, radius, origo_x, origo_y, range_step, 0, 360);
@@ -492,17 +492,17 @@ inline void circle(byte start_channel, int radius, int origo_x, int origo_y, byt
 void span(byte start_channel, int radius, int origo_x, int origo_y, byte range_step, int range_start, int range_end)
 {
     /*
-    Serial.print("span: origo_x=");
+    Serial.print(F("span: origo_x="));
     Serial.print(origo_x, DEC);
-    Serial.print(" origo_y=");
+    Serial.print(F(" origo_y="));
     Serial.println(origo_y, DEC);
-    Serial.print("span: radius=");
+    Serial.print(F("span: radius="));
     Serial.print(radius, DEC);
-    Serial.print(" range_start=");
+    Serial.print(F(" range_start="));
     Serial.print(range_start, DEC);
-    Serial.print(" range_end=");
+    Serial.print(F(" range_end="));
     Serial.print(range_end, DEC);
-    Serial.print(" range_step=");
+    Serial.print(F(" range_step="));
     Serial.println(range_step, DEC);
     */
 
@@ -534,11 +534,11 @@ void span(byte start_channel, int radius, int origo_x, int origo_y, byte range_s
         int y = int(round(sin(rad) * radius + origo_y));
 
         /*
-        Serial.print("angle=");
+        Serial.print(F("angle="));
         Serial.print(angle, DEC);
-        Serial.print(" x=");
+        Serial.print(F(" x="));
         Serial.print(x, DEC);
-        Serial.print(" y=");
+        Serial.print(F(" y="));
         Serial.println(y, DEC);
         */
 
@@ -576,14 +576,14 @@ boolean queue_servo_position(byte channel, int position)
     return servo_queue[channel].enqueue(position);
     /*
     boolean ret = servo_queue[channel].enqueue(position);
-    Serial.print("queue_servo_position: channel ");
+    Serial.print(F("queue_servo_position: channel "));
     Serial.print(channel, DEC);
-    Serial.print(" (position: ");
+    Serial.print(F(" (position: "));
     Serial.print(position, DEC);
-    Serial.print(") ");
-    Serial.print(" has ");
+    Serial.print(F(") "));
+    Serial.print(F(" has "));
     Serial.print(servo_queue[channel].count(), DEC);
-    Serial.println(" items in queue");
+    Serial.println(F(" items in queue"));
     return ret;
     */
 }
@@ -591,11 +591,11 @@ boolean queue_servo_position(byte channel, int position)
 void wait_for_servo(byte channel)
 {
     /*
-    Serial.print("wait_for_servo: channel ");
+    Serial.print(F("wait_for_servo: channel "));
     Serial.print(channel, DEC);
-    Serial.print(" has ");
+    Serial.print(F(" has "));
     Serial.print(servo_queue[channel].count(), DEC);
-    Serial.println(" items in queue");
+    Serial.println(F(" items in queue"));
     */
     while (servo_queue[channel].count())
     {
@@ -605,7 +605,7 @@ void wait_for_servo(byte channel)
          */
         delayMicroseconds(servo_delays[channel] / 2);
     }
-    //Serial.println("wait_for_servo: done");
+    //Serial.println(F("wait_for_servo: done"));
 }
 
 inline void check_servo_queue()
@@ -618,18 +618,18 @@ inline void check_servo_queue()
         {
             // Servo not ready yet
             /*
-            Serial.print("check_servo_queue: channel ");
+            Serial.print(F("check_servo_queue: channel "));
             Serial.print(channel, DEC);
-            Serial.println(" not ready yet");
+            Serial.println(F(" not ready yet"));
             */
             continue;
         }
         if (servo_queue[channel].count() < 1)
         {
             /*
-            Serial.print("check_servo_queue: channel ");
+            Serial.print(F("check_servo_queue: channel "));
             Serial.print(channel, DEC);
-            Serial.println(" has nothing to do");
+            Serial.println(F(" has nothing to do"));
             */
             // Nothing in queue
             continue;
@@ -642,9 +642,9 @@ inline void check_servo_queue()
 inline boolean set_servo_position(byte channel, int position)
 {
     /*
-    Serial.print("set_servo_position called channel ");
+    Serial.print(F("set_servo_position called channel "));
     Serial.print(channel, DEC);
-    Serial.print(" position ");
+    Serial.print(F(" position "));
     Serial.println(position, DEC);
     */
 
@@ -685,20 +685,20 @@ inline boolean set_servo_position(byte channel, int position)
     }
 
     /*
-    Serial.print("set_servo_position: channel=");
+    Serial.print(F("set_servo_position: channel="));
     Serial.print(channel, DEC);
-    Serial.print(" pwmval ");
+    Serial.print(F(" pwmval "));
     Serial.println(pwmval, DEC);
     */
 
     servo_ready[channel] = micros() + (abs(travel) * servo_delays[channel]);
 
     /*
-    Serial.print("Servo ");
+    Serial.print(F("Servo "));
     Serial.print(channel, DEC);
-    Serial.print(" set to position ");
+    Serial.print(F(" set to position "));
     Serial.print(position, DEC);
-    Serial.print(", travel ");
+    Serial.print(F(", travel "));
     Serial.println(travel, DEC);
     */
     
